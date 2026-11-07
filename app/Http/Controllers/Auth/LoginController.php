@@ -51,8 +51,10 @@ class LoginController extends Controller
         ]);
 
         // Dispatch OTP via Laravel SMTP
+        $mailSuccess = false;
         try {
             Mail::to($user->email)->send(new AdminLoginOtpMail($user, $otp, $request->ip()));
+            $mailSuccess = true;
             Log::info("Two-Step Verification OTP successfully sent to {$user->email} for user ID {$user->id}");
         } catch (\Throwable $e) {
             Log::error("Failed sending Two-Step Verification OTP to {$user->email}: " . $e->getMessage(), [
@@ -61,7 +63,11 @@ class LoginController extends Controller
             ]);
         }
 
-        return redirect()->route('login.otp')->with('status', 'A 6-digit security code has been sent to your email.');
+        $statusMsg = $mailSuccess 
+            ? 'A 6-digit security code has been sent to your email.'
+            : 'Security code generated, but there was an issue delivering the email (SMTP error). Please check your mail settings or click "Resend Code".';
+
+        return redirect()->route('login.otp')->with($mailSuccess ? 'status' : 'error', $statusMsg);
     }
 
     public function showOtpForm(Request $request)
