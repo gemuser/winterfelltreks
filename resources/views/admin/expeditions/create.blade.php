@@ -67,6 +67,11 @@
                 <textarea id="itinerary" name="itinerary" rows="6" class="form-input w-full font-mono text-sm" placeholder='[{"day": 1, "title": "Arrival in Kathmandu", "desc": "Transfer to hotel"}]'>{{ old('itinerary') }}</textarea>
             </div>
 
+            <div class="md:col-span-2">
+                <label for="gear_checklist" class="block text-sm font-medium text-gray-700 mb-2">Gear Checklist (JSON - Optional)</label>
+                <textarea id="gear_checklist" name="gear_checklist" rows="4" class="form-input w-full font-mono text-sm" placeholder='{"Essential": ["Trekking boots", "Warm down jacket"], "Recommended": ["Trekking poles", "Headlamp"]}'>{{ old('gear_checklist') }}</textarea>
+            </div>
+
             <div>
                 <label for="included_services" class="block text-sm font-medium text-gray-700 mb-2">Included Services (JSON)</label>
                 <textarea id="included_services" name="included_services" rows="4" class="form-input w-full font-mono text-sm" placeholder='["Airport transfers", "Permits", "Guide & porters"]'>{{ old('included_services') }}</textarea>

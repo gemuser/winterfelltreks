@@ -69,6 +69,11 @@
                 <textarea id="itinerary" name="itinerary" rows="6" class="form-input w-full font-mono text-sm">{{ old('itinerary', is_string($expedition->itinerary) ? $expedition->itinerary : json_encode($expedition->itinerary, JSON_PRETTY_PRINT)) }}</textarea>
             </div>
 
+            <div class="md:col-span-2">
+                <label for="gear_checklist" class="block text-sm font-medium text-gray-700 mb-2">Gear Checklist (JSON - Optional)</label>
+                <textarea id="gear_checklist" name="gear_checklist" rows="4" class="form-input w-full font-mono text-sm">{{ old('gear_checklist', is_string($expedition->gear_checklist) ? $expedition->gear_checklist : json_encode($expedition->gear_checklist, JSON_PRETTY_PRINT)) }}</textarea>
+            </div>
+
             <div>
                 <label for="included_services" class="block text-sm font-medium text-gray-700 mb-2">Included Services (JSON)</label>
                 <textarea id="included_services" name="included_services" rows="4" class="form-input w-full font-mono text-sm">{{ old('included_services', is_string($expedition->included_services) ? $expedition->included_services : json_encode($expedition->included_services, JSON_PRETTY_PRINT)) }}</textarea>

@@ -48,6 +48,17 @@ class ExpeditionController extends Controller
             $validated['slug'] = \Illuminate\Support\Str::slug($validated['title']);
         }
 
+        foreach (['itinerary', 'gear_checklist', 'included_services', 'excluded_services', 'gallery'] as $jsonField) {
+            if (!empty($validated[$jsonField]) && is_string($validated[$jsonField])) {
+                $decoded = json_decode($validated[$jsonField], true);
+                if (json_last_error() === JSON_ERROR_NONE) {
+                    $validated[$jsonField] = $decoded;
+                }
+            } elseif (!isset($validated[$jsonField]) || $validated[$jsonField] === null) {
+                $validated[$jsonField] = [];
+            }
+        }
+
         Expedition::create($validated);
 
         return redirect()->route('admin.expeditions.index')
@@ -83,6 +94,17 @@ class ExpeditionController extends Controller
             'is_featured' => 'boolean',
             'is_published' => 'boolean',
         ]);
+
+        foreach (['itinerary', 'gear_checklist', 'included_services', 'excluded_services', 'gallery'] as $jsonField) {
+            if (!empty($validated[$jsonField]) && is_string($validated[$jsonField])) {
+                $decoded = json_decode($validated[$jsonField], true);
+                if (json_last_error() === JSON_ERROR_NONE) {
+                    $validated[$jsonField] = $decoded;
+                }
+            } elseif (!isset($validated[$jsonField]) || $validated[$jsonField] === null) {
+                $validated[$jsonField] = [];
+            }
+        }
 
         $expedition->update($validated);
 
