@@ -1,0 +1,5 @@
+2026/11/07-13:28:16.079 e10 Creating DB D:\Winterfell\storage\tmp_chrome_1794037394732\Default\EdgeCoupons/coupons_data.db since it was missing.
+2026/11/07-13:28:16.109 e10 Reusing MANIFEST D:\Winterfell\storage\tmp_chrome_1794037394732\Default\EdgeCoupons/coupons_data.db/MANIFEST-000001
+2026/11/07-13:28:27.028 772c Level-0 table #5: started
+2026/11/07-13:28:27.030 772c Level-0 table #5: 683284 bytes OK
+2026/11/07-13:28:27.033 772c Delete type=0 #3

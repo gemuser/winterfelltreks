@@ -12,8 +12,7 @@
         $rawSvg = file_get_contents($logoFile);
         if (preg_match('/<path\s+d="([^"]+)"/i', $rawSvg, $matches)) {
             // Extract the pure, unbroken mountain contour (Subpath 0).
-            // This strips out all disconnected tracing artifacts/noise,
-            // resulting in a silky, continuous, non-jittery line drawing!
+            // Strips out all disconnected noise, creating a silky, continuous line drawing.
             $subpaths = preg_split('/(?=[Mm])/', trim($matches[1]), -1, PREG_SPLIT_NO_EMPTY);
             $mountainPath = trim($subpaths[0]);
         }
@@ -40,7 +39,7 @@
         {{-- Logo Box (Exact 800:498 mathematical aspect ratio matching Logo.svg & winterfell-nobg.png) --}}
         <div class="wf-logo-frame">
             
-            {{-- Real full-color stained-glass artwork that gently illuminates --}}
+            {{-- Real full-color stained-glass artwork that softly illuminates --}}
             <img id="wf-intro-color" 
                  src="{{ asset('images/winterfell-nobg.png') }}" 
                  alt="Winterfell Treks & Expedition"
@@ -84,7 +83,7 @@
         align-items: center !important;
         justify-content: center !important;
         user-select: none !important;
-        transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1), transform 0.75s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        transition: opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1), transform 0.85s cubic-bezier(0.16, 1, 0.3, 1) !important;
         will-change: opacity, transform !important;
     }
 
@@ -136,7 +135,7 @@
         }
     }
 
-    /* Real full-color artwork that softly illuminates */
+    /* Real full-color artwork that softly illuminates like Himalayan sunrise */
     .wf-logo-color {
         position: absolute;
         inset: 0;
@@ -144,15 +143,21 @@
         height: 100%;
         object-fit: fill;
         opacity: 0;
-        transform: scale(0.985);
-        transition: opacity 0.95s cubic-bezier(0.16, 1, 0.3, 1), transform 0.95s cubic-bezier(0.16, 1, 0.3, 1);
+        transform: scale(0.975);
+        filter: saturate(0.5) brightness(0.85);
+        /* 1.8s soft organic bloom curve - transitions gradually and majestically */
+        transition: 
+            opacity 1.8s cubic-bezier(0.35, 0.0, 0.15, 1), 
+            transform 1.8s cubic-bezier(0.35, 0.0, 0.15, 1),
+            filter 1.8s cubic-bezier(0.35, 0.0, 0.15, 1);
         z-index: 1;
         pointer-events: none;
-        will-change: opacity, transform;
+        will-change: opacity, transform, filter;
     }
     .wf-logo-color.wf-filled {
         opacity: 1 !important;
         transform: scale(1) !important;
+        filter: saturate(1.02) brightness(1.0) !important;
     }
 
     /* SVG Stroke Layer */
@@ -175,7 +180,7 @@
         stroke-width: 18;
         stroke-linecap: round;
         stroke-linejoin: round;
-        transition: stroke 0.95s ease, opacity 0.95s ease, stroke-width 0.95s ease;
+        transition: stroke 1.8s ease, opacity 1.8s ease, stroke-width 1.8s ease;
         will-change: stroke-dashoffset;
     }
     .wf-logo-stroke.wf-filled path {
@@ -184,7 +189,7 @@
         stroke-width: 12 !important;
     }
 
-    /* Typography */
+    /* Typography - Staggered gentle reveals */
     .wf-brand-name {
         margin-top: 26px;
         font-family: 'Cinzel', serif;
@@ -194,8 +199,8 @@
         text-transform: uppercase;
         color: #ffffff;
         opacity: 0;
-        transform: translateY(10px);
-        transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        transform: translateY(12px);
+        transition: opacity 1.2s cubic-bezier(0.2, 0.8, 0.2, 1), transform 1.2s cubic-bezier(0.2, 0.8, 0.2, 1);
         will-change: opacity, transform;
     }
     .wf-brand-name.wf-visible {
@@ -204,7 +209,7 @@
     }
 
     .wf-brand-tagline {
-        margin-top: 7px;
+        margin-top: 8px;
         font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
         font-size: 11px;
         font-weight: 600;
@@ -212,8 +217,8 @@
         text-transform: uppercase;
         color: #ea580c;
         opacity: 0;
-        transform: translateY(8px);
-        transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.12s, transform 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.12s;
+        transform: translateY(10px);
+        transition: opacity 1.2s cubic-bezier(0.2, 0.8, 0.2, 1), transform 1.2s cubic-bezier(0.2, 0.8, 0.2, 1);
         will-change: opacity, transform;
     }
     .wf-brand-tagline.wf-visible {
@@ -296,7 +301,7 @@
             if (overlay && overlay.parentNode) {
                 overlay.parentNode.removeChild(overlay);
             }
-        }, 750);
+        }, 850);
     }
 
     if (skipBtn) {
@@ -306,8 +311,8 @@
         });
     }
 
-    // Safety fallback timer: never get stuck
-    const safetyTimer = setTimeout(dismissIntro, 3800);
+    // Safety fallback timer (6.0s)
+    const safetyTimer = setTimeout(dismissIntro, 6000);
 
     if (!path) {
         setTimeout(dismissIntro, 800);
@@ -328,29 +333,36 @@
     // Force reflow so the starting state is locked before animation begins
     void path.getBoundingClientRect();
 
-    // Start drawing animation with buttery smooth pacing
+    // Start drawing animation with buttery smooth, majestic choreography
     requestAnimationFrame(function() {
         requestAnimationFrame(function() {
-            // Calm, graceful, serene drawing pace (1.5s)
-            const DRAW_TIME = 1500;
-
-            // 1. Trace the clean mountain contour smoothly
-            path.style.transition = 'stroke-dashoffset ' + DRAW_TIME + 'ms cubic-bezier(0.35, 0.0, 0.25, 1)';
+            // Stage 1: Continuous mountain vector draw (1.8 seconds)
+            const DRAW_TIME = 1800;
+            path.style.transition = 'stroke-dashoffset ' + DRAW_TIME + 'ms cubic-bezier(0.35, 0.0, 0.2, 1)';
             path.style.strokeDashoffset = '0';
 
-            // 2. Soft, organic color bloom begins as line nears completion (~1000ms)
+            // Stage 2: Stained-glass colors smoothly bloom like dawn sunlight over 1.8s
             setTimeout(function() {
                 if (colorImg) colorImg.classList.add('wf-filled');
                 if (strokeWrap) strokeWrap.classList.add('wf-filled');
-                if (title) title.classList.add('wf-visible');
-                if (sub) sub.classList.add('wf-visible');
-            }, 1000);
+            }, 1500);
 
-            // 3. Serene hold to appreciate the art, then gently dissolve into the website
+            // Stage 3: Luxury brand title gently glides upward
+            setTimeout(function() {
+                if (title) title.classList.add('wf-visible');
+            }, 2200);
+
+            // Stage 4: Subtitle gracefully emerges
+            setTimeout(function() {
+                if (sub) sub.classList.add('wf-visible');
+            }, 2600);
+
+            // Stage 5: Full artwork and typography held in place for viewing
+            // Smoothly dissolves into the live site at 4.2 seconds
             setTimeout(function() {
                 clearTimeout(safetyTimer);
                 dismissIntro();
-            }, 2450); // Total duration ~2.4s
+            }, 4200);
         });
     });
 })();
