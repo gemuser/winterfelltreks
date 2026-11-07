@@ -8,5 +8,3 @@ gsap.registerPlugin(ScrollTrigger);
 window.Alpine = Alpine;
 window.gsap = gsap;
 window.ScrollTrigger = ScrollTrigger;
-
-Alpine.start();

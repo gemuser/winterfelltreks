@@ -6,8 +6,22 @@
     $badgeEl = $elements['badge'] ?? $elements['tag'] ?? null;
     $badge = $badgeEl?->content ?? 'Bespoke Expeditions';
 
-    $btnEl = $elements['button_text'] ?? $elements['primary_cta'] ?? $elements['cta'] ?? null;
-    $buttonText = $btnEl ? (is_array($btnEl->getContent()) ? ($btnEl->getContent()['text'] ?? '') : $btnEl->content) : 'Submit Custom Expedition Request';
+    $btnEl = $elements['button_text'] ?? $elements['primary_cta'] ?? $elements['cta'] ?? $elements['secondary_cta'] ?? $elements['button'] ?? null;
+    $rawBtnContent = $btnEl?->getContent() ?? $btnEl?->content;
+    $buttonText = 'Submit Custom Expedition Request';
+    if (is_array($rawBtnContent)) {
+        $buttonText = $rawBtnContent['text'] ?? ($rawBtnContent['label'] ?? 'Submit Custom Expedition Request');
+    } elseif (is_string($rawBtnContent) && !empty($rawBtnContent)) {
+        $decoded = json_decode($rawBtnContent, true);
+        if (is_array($decoded)) {
+            $buttonText = $decoded['text'] ?? ($decoded['label'] ?? 'Submit Custom Expedition Request');
+        } else {
+            $buttonText = $rawBtnContent;
+        }
+    }
+    if (empty(trim((string)$buttonText))) {
+        $buttonText = 'Submit Custom Expedition Request';
+    }
 
     $noteEl = $elements['note'] ?? $elements['disclaimer'] ?? null;
     $note = $noteEl?->content ?? '100% Enquiry based · No immediate payment required · Dedicated Sherpa lead assigned to your enquiry';
@@ -201,7 +215,7 @@
 
                 {{-- Submit --}}
                 <div class="text-center pt-4 border-t border-gray-100">
-                    <button type="submit" :disabled="submitting" class="btn-primary px-10 py-4 text-base sm:text-lg font-bold w-full sm:w-auto shadow-md">
+                    <button type="submit" data-key="button_text" @if($btnEl) data-element-id="{{ $btnEl->id }}" @endif :disabled="submitting" class="btn-primary px-10 py-4 text-base sm:text-lg font-bold w-full sm:w-auto shadow-md">
                         <span x-show="!submitting" data-key="button_text" @if($btnEl) data-element-id="{{ $btnEl->id }}" @endif>{{ $buttonText }}</span>
                         <span x-show="submitting" class="inline-flex items-center gap-2">
                             <svg class="animate-spin h-5 w-5" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>

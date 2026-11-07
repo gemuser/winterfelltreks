@@ -1,8 +1,8 @@
 // Winterfell Treks & Expedition - Main JavaScript Entry Point
 import './bootstrap';
 
-// Alpine.js Global Store
-document.addEventListener('alpine:init', () => {
+// Alpine.js Global Components Registration
+function registerAlpineComponents() {
     // Mobile Navigation
     Alpine.data('mobileNav', () => ({
         open: false,
@@ -217,7 +217,10 @@ document.addEventListener('alpine:init', () => {
             });
         }
     }));
-});
+}
+
+registerAlpineComponents();
+Alpine.start();
 
 // Utility Functions
 window.Winterfell = {

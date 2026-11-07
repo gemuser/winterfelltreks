@@ -3126,9 +3126,14 @@ function canvaEditor() {
 
             if (field === 'text') {
                 this.activeButtonText = value;
-                const svg = this.activeButtonElement.querySelector('svg');
-                this.activeButtonElement.textContent = value;
-                if (svg) this.activeButtonElement.appendChild(svg);
+                const textSpan = this.activeButtonElement.querySelector('[data-key], span:not([x-cloak])');
+                if (textSpan && textSpan !== this.activeButtonElement) {
+                    textSpan.textContent = value;
+                } else {
+                    const svg = this.activeButtonElement.querySelector('svg');
+                    this.activeButtonElement.textContent = value;
+                    if (svg) this.activeButtonElement.appendChild(svg);
+                }
             } else if (field === 'url') {
                 this.activeButtonUrl = value;
                 this.activeButtonElement.setAttribute('href', value);
@@ -3136,7 +3141,7 @@ function canvaEditor() {
 
             clearTimeout(this._buttonSaveTimer);
             this._buttonSaveTimer = setTimeout(async () => {
-                const elId = this.activeButtonElement.dataset?.elementId;
+                const elId = this.activeButtonElement.dataset?.elementId || this.activeButtonElement.querySelector('[data-element-id]')?.dataset?.elementId;
                 const key = this.activeTextKey || 'primary_cta';
 
                 let payloadElements = {};
@@ -4420,13 +4425,13 @@ function canvaEditor() {
                 this.activeTextElement = link;
 
                 // Find element key
-                let bKey = link.dataset?.key;
+                let bKey = link.dataset?.key || link.querySelector('[data-key]')?.dataset?.key;
                 if (!bKey) {
                     const parentDraggable = link.closest('.canva-draggable-item');
                     if (parentDraggable) bKey = parentDraggable.dataset?.key;
                 }
                 if (!bKey) {
-                    const elId = link.dataset?.elementId;
+                    const elId = link.dataset?.elementId || link.querySelector('[data-element-id]')?.dataset?.elementId;
                     const sec = this.sectionsData[sectionId];
                     const linkEl = elId ? sec?.elements?.find(e => e.id == elId) : sec?.elements?.find(e => e.type === 'link');
                     if (linkEl) bKey = linkEl.key;
@@ -4437,7 +4442,10 @@ function canvaEditor() {
                 this.activeTextKey = bKey;
 
                 // Populate button fields into toolbar
-                this.activeButtonText = link.textContent.trim();
+                const textSpan = link.querySelector('[data-key], span:not([x-cloak])');
+                let rawText = (textSpan ? textSpan.textContent : link.textContent).trim();
+                rawText = rawText.replace(/Sending\.{3}/g, '').replace(/Transmitting Request\.{3}/g, '').trim();
+                this.activeButtonText = rawText;
                 this.activeButtonUrl = link.getAttribute('href') || '#';
 
                 // Detect styles and populate toolbar

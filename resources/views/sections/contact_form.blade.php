@@ -6,8 +6,22 @@
     $badgeEl = $elements['badge'] ?? $elements['tag'] ?? null;
     $badge = $badgeEl?->content ?? 'Direct Communication';
 
-    $btnEl = $elements['button_text'] ?? $elements['primary_cta'] ?? $elements['cta'] ?? $elements['button'] ?? null;
-    $buttonText = $btnEl ? (is_array($btnEl->getContent()) ? ($btnEl->getContent()['text'] ?? '') : $btnEl->content) : 'Send Message';
+    $btnEl = $elements['button_text'] ?? $elements['primary_cta'] ?? $elements['cta'] ?? $elements['secondary_cta'] ?? $elements['button'] ?? null;
+    $rawBtnContent = $btnEl?->getContent() ?? $btnEl?->content;
+    $buttonText = 'Send Message';
+    if (is_array($rawBtnContent)) {
+        $buttonText = $rawBtnContent['text'] ?? ($rawBtnContent['label'] ?? 'Send Message');
+    } elseif (is_string($rawBtnContent) && !empty($rawBtnContent)) {
+        $decoded = json_decode($rawBtnContent, true);
+        if (is_array($decoded)) {
+            $buttonText = $decoded['text'] ?? ($decoded['label'] ?? 'Send Message');
+        } else {
+            $buttonText = $rawBtnContent;
+        }
+    }
+    if (empty(trim((string)$buttonText))) {
+        $buttonText = 'Send Message';
+    }
 @endphp
 
 <section class="py-16 lg:py-24 bg-background-alt" id="{{ $section->custom_anchor_id ?: ('section-' . $section->id) }}" data-section-id="{{ $section->id }}">
@@ -29,7 +43,9 @@
         </div>
 
         <div class="bg-white p-8 sm:p-12 border border-gray-100 shadow-sm" data-gsap="fade-up" data-gsap-delay="0.1">
-            <form action="{{ route('enquiry.store') }}" method="POST" class="space-y-6" x-data="enquiryForm" @submit.prevent="submit($el)">
+            <form action="{{ route('enquiry.store') }}" method="POST" class="space-y-6" 
+                  x-data="typeof enquiryForm === 'function' ? enquiryForm() : { submitting: false, submit(f) { f.submit(); } }" 
+                  @submit.prevent="typeof submit === 'function' ? submit($el) : null">
                 @csrf
                 <input type="hidden" name="enquiry_type" value="general">
 
@@ -87,7 +103,7 @@
                 </div>
 
                 <div>
-                    <button type="submit" class="btn-primary w-full py-4 text-base font-semibold tracking-wide" :disabled="submitting">
+                    <button type="submit" data-key="button_text" @if($btnEl) data-element-id="{{ $btnEl->id }}" @endif class="btn-primary w-full py-4 text-base font-semibold tracking-wide" :disabled="submitting">
                         <span x-show="!submitting" data-key="button_text" @if($btnEl) data-element-id="{{ $btnEl->id }}" @endif>{{ $buttonText }}</span>
                         <span x-show="submitting" x-cloak>Sending...</span>
                     </button>
