@@ -1,0 +1,50 @@
+/node_modules
+/public/hot
+/public/storage
+/storage/*.key
+/vendor
+.env
+.env.backup
+.phpunit.result.cache
+Homestead.json
+Homestead.yaml
+auth.json
+npm-debug.log
+yarn-error.log
+*.log
+.cache
+/.vagrant
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Laravel
+/bootstrap/compiled.php
+/storage/framework/sessions/*
+/storage/framework/views/*
+/storage/framework/cache/*
+!/storage/framework/sessions/.gitignore
+!/storage/framework/views/.gitignore
+!/storage/framework/cache/.gitignore
+
+# Testing
+/coverage
+/phpunit.xml
+
+# Build
+/public/build
+/public/build/.vite
+
+# Debugbar
+/storage/debugbar
+
+# Telescope
+/storage/telescope

@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 60" width="280" height="60" fill="none">
+    <!-- Mountain Peak Icon -->
+    <g transform="translate(4, 8)">
+        <!-- Back mountain peak -->
+        <polygon points="12,40 26,14 40,40" fill="#ffffff" opacity="0.3"/>
+        <polygon points="26,14 20,26 32,26" fill="#e65c00" opacity="0.9"/>
+        <!-- Main towering Everest peak -->
+        <polygon points="20,40 38,6 56,40" fill="#ffffff"/>
+        <!-- Main peak snow cap -->
+        <polygon points="38,6 30,22 46,22" fill="#e65c00"/>
+        <line x1="38" y1="6" x2="38" y2="40" stroke="#0b0d10" stroke-width="1.2" opacity="0.25"/>
+        <!-- Front small peak -->
+        <polygon points="34,40 48,18 62,40" fill="#e2e8f0"/>
+        <polygon points="48,18 42,28 54,28" fill="#fb923c"/>
+        <!-- Compass star -->
+        <circle cx="38" cy="2" r="2" fill="#e65c00"/>
+    </g>
+    <!-- Brand Typography -->
+    <text x="76" y="29" font-family="'Cinzel Decorative', 'Georgia', serif" font-size="20" font-weight="700" fill="#ffffff" letter-spacing="1.5">WINTERFELL</text>
+    <text x="77" y="44" font-family="'Space Grotesk', 'Segoe UI', sans-serif" font-size="8.5" font-weight="600" fill="#e65c00" letter-spacing="3.5">TREKS &amp; EXPEDITION</text>
+    <line x1="77" y1="48" x2="260" y2="48" stroke="#e65c00" stroke-width="0.75" opacity="0.6"/>
+</svg>

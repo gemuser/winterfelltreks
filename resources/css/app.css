@@ -1,0 +1,202 @@
+@import "tailwindcss";
+@import "tailwindcss/theme.css";
+
+@theme {
+    --font-display: "Cinzel Decorative", "Cormorant Garamond", "Cormorant", "Syne", serif;
+    --font-body: "Space Grotesk", "Inter", "Satoshi", "Jost", system-ui, -apple-system, sans-serif;
+    
+    --color-primary: #0b0d10;
+    --color-primary-light: #1a1d24;
+    --color-primary-lighter: #2a2f3a;
+    --color-accent: #e65c00;
+    --color-accent-primary: #e65c00;
+    --color-accent-secondary: #d97706;
+    --color-accent-light: #f97316;
+    --color-accent-lighter: #fb923c;
+    --color-text-primary: #0b0d10;
+    --color-text-secondary: #4a4f5a;
+    --color-text-muted: #64748b;
+    --color-background: #ffffff;
+    --color-background-alt: #f8fafc;
+    --color-background-cream: #f4f1ea;
+    --color-border: #e2e8f0;
+    --color-border-dark: #cbd5e1;
+}
+
+@layer base {
+    * {
+        box-sizing: border-box;
+    }
+    
+    html {
+        scroll-behavior: smooth;
+    }
+    
+    body {
+        @apply font-body text-text-primary bg-background antialiased;
+    }
+    
+    h1, h2, h3, h4, h5, h6 {
+        @apply font-display font-bold tracking-tight;
+    }
+    
+    ::selection {
+        @apply bg-accent text-white;
+    }
+    
+    :focus-visible {
+        @apply outline-none ring-2 ring-accent ring-offset-2;
+    }
+}
+
+@layer components {
+    .btn-primary {
+        @apply inline-flex items-center justify-center px-6 py-3 font-semibold text-white bg-accent hover:bg-accent-light transition-colors duration-200 rounded-none border-2 border-accent;
+    }
+    
+    .btn-secondary {
+        @apply inline-flex items-center justify-center px-6 py-3 font-semibold text-accent bg-transparent hover:bg-accent/10 transition-colors duration-200 rounded-none border-2 border-accent;
+    }
+    
+    .btn-outline {
+        @apply inline-flex items-center justify-center px-6 py-3 font-semibold text-text-primary bg-transparent hover:bg-gray-100 transition-colors duration-200 rounded-none border-2 border-gray-300;
+    }
+    
+    .form-input {
+        @apply w-full px-4 py-3 border border-gray-300 bg-white text-text-primary placeholder:text-text-muted transition-all duration-200;
+    }
+    
+    .form-input:focus {
+        @apply border-accent ring-2 ring-accent/20;
+    }
+    
+    .form-checkbox {
+        @apply border-gray-300 text-accent focus:ring-accent/20;
+    }
+    
+    .destination-card {
+        @apply bg-white border border-gray-100 overflow-hidden transition-shadow duration-300 hover:shadow-xl;
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
+    }
+    
+    .package-card {
+        @apply bg-white border border-gray-100 overflow-hidden transition-shadow duration-300 hover:shadow-xl;
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
+    }
+    
+    .experience-card {
+        @apply bg-white border border-gray-100 overflow-hidden transition-shadow duration-300 hover:shadow-xl;
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
+    }
+    
+    .article-card {
+        @apply bg-white border border-gray-100 overflow-hidden transition-shadow duration-300 hover:shadow-lg;
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
+    }
+    
+    .feature-card {
+        @apply bg-white border border-gray-100 p-6 lg:p-8 transition-[border-color,box-shadow] duration-300 hover:border-accent/50 hover:shadow-lg;
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
+    }
+    
+    .value-card {
+        @apply bg-white border border-gray-100 p-6 lg:p-8 transition-[border-color,box-shadow] duration-300;
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
+    }
+    
+    .team-card {
+        @apply transition-[border-color,box-shadow] duration-300;
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
+    }
+    
+    .testimonial-card {
+        @apply bg-white border border-gray-100 p-8 lg:p-12 rounded-lg;
+    }
+    
+    .gallery-item {
+        @apply overflow-hidden;
+    }
+    
+    .gallery-item img {
+        @apply transition-transform duration-700;
+    }
+    
+    .gallery-item:hover img {
+        @apply scale-105;
+    }
+    
+    .section-divider {
+        @apply w-24 h-0.5 bg-accent;
+    }
+}
+
+@layer utilities {
+    .text-balance {
+        text-wrap: balance;
+    }
+    
+    .animate-fade-in {
+        animation: fadeIn 0.6s ease-out forwards;
+    }
+    
+    .animate-slide-up {
+        animation: slideUp 0.6s ease-out forwards;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    
+    @keyframes slideUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .prose {
+        @apply text-text-secondary leading-relaxed;
+    }
+    
+    .prose h1, .prose h2, .prose h3, .prose h4 {
+        @apply font-display font-bold text-text-primary mt-10 mb-4 tracking-tight;
+    }
+    
+    .prose h1 { @apply text-3xl sm:text-4xl; }
+    .prose h2 { @apply text-2xl sm:text-3xl; }
+    .prose h3 { @apply text-xl sm:text-2xl; }
+    .prose h4 { @apply text-lg sm:text-xl; }
+    
+    .prose p { @apply mb-6; }
+    .prose ul, .prose ol { @apply mb-6 pl-6; }
+    .prose ul { @apply list-disc; }
+    .prose ol { @apply list-decimal; }
+    .prose li { @apply mb-2; }
+    
+    .prose a { @apply text-accent hover:underline; }
+    .prose strong { @apply font-semibold text-text-primary; }
+    .prose blockquote { @apply border-l-4 border-accent pl-6 italic my-6 text-text-secondary; }
+    .prose code { @apply bg-gray-100 px-1.5 py-0.5 rounded text-sm font-mono; }
+    .prose pre { @apply bg-gray-950 text-gray-100 p-4 rounded overflow-x-auto mb-6; }
+    .prose pre code { @apply bg-transparent p-0 text-inherit; }
+    
+    .prose-invert {
+        @apply text-gray-300;
+    }
+    
+    .prose-invert h1, .prose-invert h2, .prose-invert h3, .prose-invert h4 {
+        @apply text-white;
+    }
+    
+    .prose-invert strong { @apply text-white; }
+    .prose-invert blockquote { @apply border-accent text-gray-300; }
+    .prose-invert a { @apply text-accent-lighter; }
+    .prose-invert code { @apply bg-gray-800 text-accent-lighter; }
+    .prose-invert pre { @apply bg-gray-900 text-gray-100; }
+}

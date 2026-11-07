@@ -1,0 +1,23 @@
+<?php
+$svg = file_get_contents('public/Logo.svg');
+preg_match('/<path\s+d="([^"]+)"/', $svg, $m);
+$d = $m[1];
+$subpaths = preg_split('/(?=[Mm])/', trim($d), -1, PREG_SPLIT_NO_EMPTY);
+
+// Let's create an HTML that renders Subpath 0 alone vs Subpaths 0+49+50+81
+?>
+<!DOCTYPE html>
+<html>
+<head><title>Subpath Test</title></head>
+<body style="background: #080c14; display: flex; gap: 30px; padding: 40px; justify-content: center;">
+    <div style="text-align: center; color: white;">
+        <h3>Subpath 0 only (Continuous clean outline)</h3>
+        <svg viewBox="126 274 800 498" style="width: 380px; height: 236px;">
+            <g transform="translate(0, 1024) scale(0.1, -0.1)">
+                <path d="<?= $subpaths[0] ?>" fill="none" stroke="#ea580c" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" />
+            </g>
+        </svg>
+    </div>
+</body>
+</html>
+
