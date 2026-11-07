@@ -45,8 +45,22 @@ class DestinationController extends Controller
             'meta_description' => 'nullable|string',
         ]);
 
+        if ($request->hasFile('featured_image') || $request->hasFile('featured_image_file')) {
+            $file = $request->file('featured_image') ?: $request->file('featured_image_file');
+            $filename = Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) . '-' . time() . '.' . ($file->getClientOriginalExtension() ?: 'jpg');
+            $file->move(public_path('images/uploads'), $filename);
+            $validated['featured_image'] = '/images/uploads/' . $filename;
+        }
+
         if (empty($validated['slug'])) {
             $validated['slug'] = Str::slug($validated['name']);
+        }
+
+        if ($request->hasFile('featured_image') || $request->hasFile('featured_image_file')) {
+            $file = $request->file('featured_image') ?: $request->file('featured_image_file');
+            $filename = Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) . '-' . time() . '.' . ($file->getClientOriginalExtension() ?: 'jpg');
+            $file->move(public_path('images/uploads'), $filename);
+            $validated['featured_image'] = '/images/uploads/' . $filename;
         }
 
         if (isset($validated['gallery']) && is_string($validated['gallery'])) {
@@ -87,6 +101,13 @@ class DestinationController extends Controller
             'meta_title' => 'nullable|string|max:255',
             'meta_description' => 'nullable|string',
         ]);
+
+        if ($request->hasFile('featured_image') || $request->hasFile('featured_image_file')) {
+            $file = $request->file('featured_image') ?: $request->file('featured_image_file');
+            $filename = Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) . '-' . time() . '.' . ($file->getClientOriginalExtension() ?: 'jpg');
+            $file->move(public_path('images/uploads'), $filename);
+            $validated['featured_image'] = '/images/uploads/' . $filename;
+        }
 
         if (isset($validated['gallery']) && is_string($validated['gallery'])) {
             $validated['gallery'] = array_filter(array_map('trim', explode("\n", str_replace(["\r", ','], ["\n", "\n"], $validated['gallery']))));

@@ -37,6 +37,13 @@ class TestimonialController extends Controller
             'sort_order' => 'nullable|integer',
         ]);
 
+        if ($request->hasFile('customer_photo') || $request->hasFile('customer_photo_file')) {
+            $file = $request->file('customer_photo') ?: $request->file('customer_photo_file');
+            $filename = \Illuminate\Support\Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) . '-' . time() . '.' . ($file->getClientOriginalExtension() ?: 'jpg');
+            $file->move(public_path('images/uploads'), $filename);
+            $validated['customer_photo'] = '/images/uploads/' . $filename;
+        }
+
         Testimonial::create($validated);
 
         return redirect()->route('admin.testimonials.index')
@@ -65,6 +72,13 @@ class TestimonialController extends Controller
             'is_published' => 'boolean',
             'sort_order' => 'nullable|integer',
         ]);
+
+        if ($request->hasFile('customer_photo') || $request->hasFile('customer_photo_file')) {
+            $file = $request->file('customer_photo') ?: $request->file('customer_photo_file');
+            $filename = \Illuminate\Support\Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) . '-' . time() . '.' . ($file->getClientOriginalExtension() ?: 'jpg');
+            $file->move(public_path('images/uploads'), $filename);
+            $validated['customer_photo'] = '/images/uploads/' . $filename;
+        }
 
         $testimonial->update($validated);
 

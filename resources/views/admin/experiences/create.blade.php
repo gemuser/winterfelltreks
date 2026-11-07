@@ -20,7 +20,7 @@
     </div>
     @endif
 
-    <form method="POST" action="{{ route('admin.experiences.store') }}" class="space-y-6">
+    <form method="POST" action="{{ route('admin.experiences.store') }}" enctype="multipart/form-data" class="space-y-6">
         @csrf
 
         <div class="bg-white rounded-xl border border-gray-200 p-6 space-y-5 shadow-xs">
@@ -49,8 +49,7 @@
             </div>
 
             <div>
-                <label class="block text-xs font-bold text-gray-700 mb-1">Hero Image URL</label>
-                <input type="text" name="hero_image" value="{{ old('hero_image') }}" class="form-input w-full text-sm font-mono" placeholder="https://... or /images/experiences/heli.jpg">
+                <x-admin.image-upload name="hero_image" label="Hero Image" :value="old('hero_image')" />
             </div>
 
             <div>

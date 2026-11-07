@@ -12,7 +12,7 @@
         <a href="{{ route('admin.expeditions.index') }}" class="btn-secondary">Back to List</a>
     </div>
 
-    <form method="POST" action="{{ route('admin.expeditions.store') }}" class="bg-white p-6 rounded-lg border border-gray-200 space-y-6">
+    <form method="POST" action="{{ route('admin.expeditions.store') }}" enctype="multipart/form-data" class="bg-white p-6 rounded-lg border border-gray-200 space-y-6">
         @csrf
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -52,9 +52,8 @@
                 </select>
             </div>
 
-            <div>
-                <label for="featured_image" class="block text-sm font-medium text-gray-700 mb-2">Featured Image URL</label>
-                <input type="text" id="featured_image" name="featured_image" class="form-input w-full" value="{{ old('featured_image') }}" placeholder="https://... or /images/...">
+            <div class="md:col-span-2">
+                <x-admin.image-upload name="featured_image" label="Featured Image" :value="old('featured_image')" />
             </div>
 
             <div class="md:col-span-2">

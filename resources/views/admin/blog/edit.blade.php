@@ -29,7 +29,7 @@
     </div>
     @endif
 
-    <form method="POST" action="{{ route('admin.blog.update', $post) }}" class="space-y-6">
+    <form method="POST" action="{{ route('admin.blog.update', $post) }}" enctype="multipart/form-data" class="space-y-6">
         @csrf
         @method('PUT')
 
@@ -69,8 +69,7 @@
             </div>
 
             <div>
-                <label class="block text-xs font-bold text-gray-700 mb-1">Cover Image URL</label>
-                <input type="text" name="cover_image" value="{{ old('cover_image', $post->cover_image) }}" class="form-input w-full text-sm font-mono">
+                <x-admin.image-upload name="cover_image" label="Cover Image" :value="old('cover_image', $post->cover_image)" />
             </div>
 
             <div>

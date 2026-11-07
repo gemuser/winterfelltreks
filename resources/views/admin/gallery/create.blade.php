@@ -20,7 +20,7 @@
     </div>
     @endif
 
-    <form method="POST" action="{{ route('admin.gallery.store') }}" class="space-y-6">
+    <form method="POST" action="{{ route('admin.gallery.store') }}" enctype="multipart/form-data" class="space-y-6">
         @csrf
 
         <div class="bg-white rounded-xl border border-gray-200 p-6 space-y-5 shadow-xs">
@@ -33,8 +33,7 @@
                 </div>
 
                 <div class="md:col-span-2">
-                    <label class="block text-xs font-bold text-gray-700 mb-1">Image URL *</label>
-                    <input type="text" name="image" value="{{ old('image') }}" required class="form-input w-full text-sm font-mono" placeholder="https://... or /images/gallery/photo.jpg">
+                    <x-admin.image-upload name="image" label="Photo File" :value="old('image')" :required="true" />
                 </div>
 
                 <div>

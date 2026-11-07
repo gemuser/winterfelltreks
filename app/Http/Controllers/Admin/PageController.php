@@ -60,6 +60,13 @@ class PageController extends Controller
             'footer_order' => 'nullable|integer|min:0',
         ]);
 
+        if ($request->hasFile('og_image') || $request->hasFile('og_image_file')) {
+            $file = $request->file('og_image') ?: $request->file('og_image_file');
+            $filename = Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) . '-' . time() . '.' . ($file->getClientOriginalExtension() ?: 'jpg');
+            $file->move(public_path('images/uploads'), $filename);
+            $validated['og_image'] = '/images/uploads/' . $filename;
+        }
+
         if (empty($validated['slug'])) {
             $validated['slug'] = Str::slug($validated['title']);
         }
@@ -130,6 +137,13 @@ class PageController extends Controller
             'footer_column' => 'nullable|integer|between:1,5',
             'footer_order' => 'nullable|integer|min:0',
         ]);
+
+        if ($request->hasFile('og_image') || $request->hasFile('og_image_file')) {
+            $file = $request->file('og_image') ?: $request->file('og_image_file');
+            $filename = Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) . '-' . time() . '.' . ($file->getClientOriginalExtension() ?: 'jpg');
+            $file->move(public_path('images/uploads'), $filename);
+            $validated['og_image'] = '/images/uploads/' . $filename;
+        }
 
         if (empty($validated['slug'])) {
             $validated['slug'] = Str::slug($validated['title']);

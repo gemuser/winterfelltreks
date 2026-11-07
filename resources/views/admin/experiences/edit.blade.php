@@ -29,7 +29,7 @@
     </div>
     @endif
 
-    <form method="POST" action="{{ route('admin.experiences.update', $experience) }}" class="space-y-6">
+    <form method="POST" action="{{ route('admin.experiences.update', $experience) }}" enctype="multipart/form-data" class="space-y-6">
         @csrf
         @method('PUT')
 
@@ -59,8 +59,7 @@
             </div>
 
             <div>
-                <label class="block text-xs font-bold text-gray-700 mb-1">Hero Image URL</label>
-                <input type="text" name="hero_image" value="{{ old('hero_image', $experience->hero_image) }}" class="form-input w-full text-sm font-mono">
+                <x-admin.image-upload name="hero_image" label="Hero Image" :value="old('hero_image', $experience->hero_image)" />
             </div>
 
             <div>

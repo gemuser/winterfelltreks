@@ -42,8 +42,22 @@ class BlogPostController extends Controller
             'meta_description' => 'nullable|string',
         ]);
 
+        if ($request->hasFile('cover_image') || $request->hasFile('cover_image_file')) {
+            $file = $request->file('cover_image') ?: $request->file('cover_image_file');
+            $filename = Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) . '-' . time() . '.' . ($file->getClientOriginalExtension() ?: 'jpg');
+            $file->move(public_path('images/uploads'), $filename);
+            $validated['cover_image'] = '/images/uploads/' . $filename;
+        }
+
         if (empty($validated['slug'])) {
             $validated['slug'] = Str::slug($validated['title']);
+        }
+
+        if ($request->hasFile('cover_image') || $request->hasFile('cover_image_file')) {
+            $file = $request->file('cover_image') ?: $request->file('cover_image_file');
+            $filename = Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) . '-' . time() . '.' . ($file->getClientOriginalExtension() ?: 'jpg');
+            $file->move(public_path('images/uploads'), $filename);
+            $validated['cover_image'] = '/images/uploads/' . $filename;
         }
 
         if (empty($validated['published_at']) && $validated['is_published']) {
@@ -81,6 +95,13 @@ class BlogPostController extends Controller
             'meta_title' => 'nullable|string|max:255',
             'meta_description' => 'nullable|string',
         ]);
+
+        if ($request->hasFile('cover_image') || $request->hasFile('cover_image_file')) {
+            $file = $request->file('cover_image') ?: $request->file('cover_image_file');
+            $filename = Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) . '-' . time() . '.' . ($file->getClientOriginalExtension() ?: 'jpg');
+            $file->move(public_path('images/uploads'), $filename);
+            $validated['cover_image'] = '/images/uploads/' . $filename;
+        }
 
         if (empty($validated['published_at']) && $validated['is_published']) {
             $validated['published_at'] = now();

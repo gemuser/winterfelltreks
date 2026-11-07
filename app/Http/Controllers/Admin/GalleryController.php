@@ -38,6 +38,13 @@ class GalleryController extends Controller
             'is_visible' => 'boolean',
         ]);
 
+        if ($request->hasFile('image') || $request->hasFile('image_file')) {
+            $file = $request->file('image') ?: $request->file('image_file');
+            $filename = \Illuminate\Support\Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) . '-' . time() . '.' . ($file->getClientOriginalExtension() ?: 'jpg');
+            $file->move(public_path('images/uploads'), $filename);
+            $validated['image'] = '/images/uploads/' . $filename;
+        }
+
         GalleryImage::create($validated);
 
         return redirect()->route('admin.gallery.index')
@@ -69,6 +76,13 @@ class GalleryController extends Controller
             'sort_order' => 'nullable|integer',
             'is_visible' => 'boolean',
         ]);
+
+        if ($request->hasFile('image') || $request->hasFile('image_file')) {
+            $file = $request->file('image') ?: $request->file('image_file');
+            $filename = \Illuminate\Support\Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) . '-' . time() . '.' . ($file->getClientOriginalExtension() ?: 'jpg');
+            $file->move(public_path('images/uploads'), $filename);
+            $validated['image'] = '/images/uploads/' . $filename;
+        }
 
         $gallery->update($validated);
 

@@ -20,7 +20,7 @@
     </div>
     @endif
 
-    <form method="POST" action="{{ route('admin.destinations.store') }}" class="space-y-6">
+    <form method="POST" action="{{ route('admin.destinations.store') }}" enctype="multipart/form-data" class="space-y-6">
         @csrf
 
         <div class="bg-white rounded-xl border border-gray-200 p-6 space-y-5 shadow-xs">
@@ -59,8 +59,7 @@
             </div>
 
             <div>
-                <label class="block text-xs font-bold text-gray-700 mb-1">Featured Image URL</label>
-                <input type="text" name="featured_image" value="{{ old('featured_image') }}" class="form-input w-full text-sm font-mono" placeholder="https://... or /images/destinations/everest.jpg">
+                <x-admin.image-upload name="featured_image" label="Featured Image" :value="old('featured_image')" />
             </div>
 
             <div>

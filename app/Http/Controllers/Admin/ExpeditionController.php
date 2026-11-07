@@ -44,8 +44,22 @@ class ExpeditionController extends Controller
             'is_published' => 'boolean',
         ]);
 
+        if ($request->hasFile('featured_image') || $request->hasFile('featured_image_file')) {
+            $file = $request->file('featured_image') ?: $request->file('featured_image_file');
+            $filename = \Illuminate\Support\Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) . '-' . time() . '.' . ($file->getClientOriginalExtension() ?: 'jpg');
+            $file->move(public_path('images/uploads'), $filename);
+            $validated['featured_image'] = '/images/uploads/' . $filename;
+        }
+
         if (empty($validated['slug'])) {
             $validated['slug'] = \Illuminate\Support\Str::slug($validated['title']);
+        }
+
+        if ($request->hasFile('featured_image') || $request->hasFile('featured_image_file')) {
+            $file = $request->file('featured_image') ?: $request->file('featured_image_file');
+            $filename = \Illuminate\Support\Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) . '-' . time() . '.' . ($file->getClientOriginalExtension() ?: 'jpg');
+            $file->move(public_path('images/uploads'), $filename);
+            $validated['featured_image'] = '/images/uploads/' . $filename;
         }
 
         foreach (['itinerary', 'gear_checklist', 'included_services', 'excluded_services', 'gallery'] as $jsonField) {
@@ -94,6 +108,13 @@ class ExpeditionController extends Controller
             'is_featured' => 'boolean',
             'is_published' => 'boolean',
         ]);
+
+        if ($request->hasFile('featured_image') || $request->hasFile('featured_image_file')) {
+            $file = $request->file('featured_image') ?: $request->file('featured_image_file');
+            $filename = \Illuminate\Support\Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) . '-' . time() . '.' . ($file->getClientOriginalExtension() ?: 'jpg');
+            $file->move(public_path('images/uploads'), $filename);
+            $validated['featured_image'] = '/images/uploads/' . $filename;
+        }
 
         foreach (['itinerary', 'gear_checklist', 'included_services', 'excluded_services', 'gallery'] as $jsonField) {
             if (!empty($validated[$jsonField]) && is_string($validated[$jsonField])) {

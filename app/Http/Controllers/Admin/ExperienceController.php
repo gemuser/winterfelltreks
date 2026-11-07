@@ -43,6 +43,13 @@ class ExperienceController extends Controller
             'meta_description' => 'nullable|string',
         ]);
 
+        if ($request->hasFile('hero_image') || $request->hasFile('hero_image_file')) {
+            $file = $request->file('hero_image') ?: $request->file('hero_image_file');
+            $filename = Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) . '-' . time() . '.' . ($file->getClientOriginalExtension() ?: 'jpg');
+            $file->move(public_path('images/uploads'), $filename);
+            $validated['hero_image'] = '/images/uploads/' . $filename;
+        }
+
         if (empty($validated['slug'])) {
             $validated['slug'] = Str::slug($validated['name']);
         }
@@ -79,6 +86,13 @@ class ExperienceController extends Controller
             'meta_title' => 'nullable|string|max:255',
             'meta_description' => 'nullable|string',
         ]);
+
+        if ($request->hasFile('hero_image') || $request->hasFile('hero_image_file')) {
+            $file = $request->file('hero_image') ?: $request->file('hero_image_file');
+            $filename = Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) . '-' . time() . '.' . ($file->getClientOriginalExtension() ?: 'jpg');
+            $file->move(public_path('images/uploads'), $filename);
+            $validated['hero_image'] = '/images/uploads/' . $filename;
+        }
 
         $experience->update($validated);
 

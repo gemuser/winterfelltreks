@@ -158,13 +158,33 @@
                 </div>
                 
                 <template x-if="formData.type === 'image'">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Image URL</label>
-                        <input type="url" name="value" class="form-input w-full" x-model="formData.value" placeholder="https://example.com/image.jpg">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Alt Text</label>
-                        <input type="text" name="alt" class="form-input w-full" x-model="formData.alt" placeholder="Alt text">
+                    <div class="space-y-3">
+                        <label class="block text-sm font-medium text-gray-700">Choose Image File</label>
+                        
+                        <div class="flex items-center gap-3 p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                            <template x-if="formData.value">
+                                <div class="w-16 h-16 rounded border border-gray-300 overflow-hidden shrink-0 bg-gray-900 flex items-center justify-center">
+                                    <img :src="formData.value" class="w-full h-full object-cover">
+                                </div>
+                            </template>
+                            
+                            <div class="flex-1">
+                                <input type="file" accept="image/*" class="hidden" x-ref="settingFileInput" @change="uploadSettingImage($event)">
+                                <button type="button" @click="$refs.settingFileInput.click()" class="btn-secondary text-xs px-3 py-1.5 inline-flex items-center gap-1.5 shadow-2xs">
+                                    <svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                                    </svg>
+                                    <span x-text="formData.value ? 'Change Image File' : 'Choose Image File from Computer'"></span>
+                                </button>
+                                <button type="button" x-show="formData.value" @click="formData.value = ''" class="text-xs text-red-600 hover:text-red-800 ml-2 font-medium">Remove</button>
+                                <p class="text-3xs text-gray-400 font-mono mt-1 truncate" x-text="formData.value || 'No image selected'"></p>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Alt Text</label>
+                            <input type="text" name="alt" class="form-input w-full text-xs" x-model="formData.alt" placeholder="Descriptive alt text">
+                        </div>
                     </div>
                 </template>
                 
@@ -214,6 +234,36 @@
     </div>
     
     <script>
+        async function uploadSettingImage(event) {
+            const file = event.target.files?.[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('image', file);
+
+            try {
+                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || document.querySelector('input[name="_token"]')?.value;
+                const res = await fetch('{{ route('admin.media.upload') }}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json'
+                    },
+                    body: formData
+                });
+                const data = await res.json();
+                if (data.success && data.url) {
+                    this.formData.value = data.url;
+                    if (!this.formData.alt) this.formData.alt = file.name;
+                } else {
+                    alert('Upload failed: ' + (data.message || 'Please try another image.'));
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Upload failed: ' + err.message);
+            }
+        }
+
         function editSetting(id) {
             fetch(`/admin/site-settings/${id}`)
                 .then(r => r.json())

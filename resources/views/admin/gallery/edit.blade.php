@@ -26,21 +26,13 @@
     </div>
     @endif
 
-    <form method="POST" action="{{ route('admin.gallery.update', $image) }}" class="space-y-6">
+    <form method="POST" action="{{ route('admin.gallery.update', $image) }}" enctype="multipart/form-data" class="space-y-6">
         @csrf
         @method('PUT')
 
         <div class="bg-white rounded-xl border border-gray-200 p-6 space-y-5 shadow-xs">
             <h2 class="text-base font-bold text-gray-900 border-b border-gray-100 pb-3">Photo Details</h2>
             
-            <div class="flex items-center gap-4 p-3 bg-gray-50 rounded-xl border border-gray-200">
-                <img src="{{ $image->image }}" alt="{{ $image->title }}" class="w-24 h-16 object-cover rounded-lg border border-gray-300">
-                <div class="text-xs text-gray-500">
-                    <span class="font-bold text-gray-800 block">Preview Image</span>
-                    <span class="font-mono text-3xs text-gray-400 break-all">{{ $image->image }}</span>
-                </div>
-            </div>
-
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="md:col-span-2">
                     <label class="block text-xs font-bold text-gray-700 mb-1">Photo Title *</label>
@@ -48,8 +40,7 @@
                 </div>
 
                 <div class="md:col-span-2">
-                    <label class="block text-xs font-bold text-gray-700 mb-1">Image URL *</label>
-                    <input type="text" name="image" value="{{ old('image', $image->image) }}" required class="form-input w-full text-sm font-mono">
+                    <x-admin.image-upload name="image" label="Photo File" :value="old('image', $image->image)" :required="true" />
                 </div>
 
                 <div>

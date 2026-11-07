@@ -9,7 +9,7 @@
         <p class="text-gray-500 mt-1">Create a new dynamic page with modular sections</p>
     </div>
     
-    <form method="POST" action="{{ route('admin.pages.store') }}" class="bg-white p-6 rounded-lg border border-gray-200 space-y-6">
+    <form method="POST" action="{{ route('admin.pages.store') }}" enctype="multipart/form-data" class="bg-white p-6 rounded-lg border border-gray-200 space-y-6">
         @csrf
         
         <div>
@@ -50,8 +50,7 @@
         </div>
         
         <div>
-            <label for="og_image" class="block text-sm font-medium text-gray-700 mb-2">Open Graph Image URL</label>
-            <input type="url" id="og_image" name="og_image" class="form-input w-full" value="{{ old('og_image') }}">
+            <x-admin.image-upload name="og_image" label="Open Graph / Social Sharing Image" :value="old('og_image')" />
         </div>
         
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
