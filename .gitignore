@@ -39,10 +39,6 @@ Thumbs.db
 /coverage
 /phpunit.xml
 
-# Build
-/public/build
-/public/build/.vite
-
 # Debugbar
 /storage/debugbar
 
