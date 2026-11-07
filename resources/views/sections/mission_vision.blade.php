@@ -1,8 +1,17 @@
 @php
-    $missionTitle = $elements['mission_title']?->content ?? 'Our Mission';
-    $missionText = $elements['mission_text']?->content ?? 'To orchestrate profound, sustainable, and transformative journeys into the heart of the Himalayas, preserving native heritage and mountains while providing unprecedented expedition safety and luxury.';
-    $visionTitle = $elements['vision_title']?->content ?? 'Our Vision';
-    $visionText = $elements['vision_text']?->content ?? 'To stand as the global benchmark for responsible high-altitude alpine travel—bridging authentic sherpa mastery, low-impact exploration, and bespoke hospitality for generations to come.';
+    $missionTitleEl = $elements['mission_title'] ?? $elements['headline'] ?? $elements['heading'] ?? null;
+    $missionTitle = $missionTitleEl?->content ?? 'Our Mission';
+    $missionTextEl = $elements['mission_text'] ?? $elements['body'] ?? null;
+    $missionText = $missionTextEl?->content ?? 'To orchestrate profound, sustainable, and transformative journeys into the heart of the Himalayas, preserving native heritage and mountains while providing unprecedented expedition safety and luxury.';
+    $missionBadgeEl = $elements['mission_badge'] ?? $elements['badge'] ?? null;
+    $missionBadge = $missionBadgeEl?->content ?? 'Guiding Purpose';
+
+    $visionTitleEl = $elements['vision_title'] ?? null;
+    $visionTitle = $visionTitleEl?->content ?? 'Our Vision';
+    $visionTextEl = $elements['vision_text'] ?? null;
+    $visionText = $visionTextEl?->content ?? 'To stand as the global benchmark for responsible high-altitude alpine travel—bridging authentic sherpa mastery, low-impact exploration, and bespoke hospitality for generations to come.';
+    $visionBadgeEl = $elements['vision_badge'] ?? null;
+    $visionBadge = $visionBadgeEl?->content ?? 'Future Horizon';
 @endphp
 
 <section class="py-20 lg:py-32 bg-white" id="{{ $section->custom_anchor_id ?: ('section-' . $section->id) }}" data-section-id="{{ $section->id }}">
@@ -11,11 +20,13 @@
             {{-- Mission Card --}}
             <div class="bg-background-alt border border-gray-100 p-8 sm:p-12 relative overflow-hidden group hover:border-accent-primary/40 transition-colors duration-300" data-gsap="fade-right">
                 <div class="w-12 h-1 bg-accent-primary mb-6"></div>
-                <span class="text-accent-primary font-semibold text-xs tracking-widest uppercase block mb-3">Guiding Purpose</span>
-                <h2 class="font-display text-2xl sm:text-3xl font-bold text-text-primary mb-6 tracking-tight">
+                @if($missionBadge)
+                <span data-key="mission_badge" @if($missionBadgeEl) data-element-id="{{ $missionBadgeEl->id }}" @endif class="text-accent-primary font-semibold text-xs tracking-widest uppercase block mb-3">{{ $missionBadge }}</span>
+                @endif
+                <h2 data-key="mission_title" data-element-id="{{ $missionTitleEl?->id ?? '' }}" class="font-display text-2xl sm:text-3xl font-bold text-text-primary mb-6 tracking-tight">
                     {{ $missionTitle }}
                 </h2>
-                <div class="prose prose-lg max-w-none text-text-secondary leading-relaxed">
+                <div data-key="mission_text" data-element-id="{{ $missionTextEl?->id ?? '' }}" class="prose prose-lg max-w-none text-text-secondary leading-relaxed">
                     {!! $missionText !!}
                 </div>
             </div>
@@ -23,11 +34,13 @@
             {{-- Vision Card --}}
             <div class="bg-background-alt border border-gray-100 p-8 sm:p-12 relative overflow-hidden group hover:border-accent-primary/40 transition-colors duration-300" data-gsap="fade-left">
                 <div class="w-12 h-1 bg-accent-primary mb-6"></div>
-                <span class="text-accent-primary font-semibold text-xs tracking-widest uppercase block mb-3">Future Horizon</span>
-                <h2 class="font-display text-2xl sm:text-3xl font-bold text-text-primary mb-6 tracking-tight">
+                @if($visionBadge)
+                <span data-key="vision_badge" @if($visionBadgeEl) data-element-id="{{ $visionBadgeEl->id }}" @endif class="text-accent-primary font-semibold text-xs tracking-widest uppercase block mb-3">{{ $visionBadge }}</span>
+                @endif
+                <h2 data-key="vision_title" data-element-id="{{ $visionTitleEl?->id ?? '' }}" class="font-display text-2xl sm:text-3xl font-bold text-text-primary mb-6 tracking-tight">
                     {{ $visionTitle }}
                 </h2>
-                <div class="prose prose-lg max-w-none text-text-secondary leading-relaxed">
+                <div data-key="vision_text" data-element-id="{{ $visionTextEl?->id ?? '' }}" class="prose prose-lg max-w-none text-text-secondary leading-relaxed">
                     {!! $visionText !!}
                 </div>
             </div>

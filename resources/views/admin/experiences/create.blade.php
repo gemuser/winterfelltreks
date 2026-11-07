@@ -49,7 +49,7 @@
             </div>
 
             <div>
-                <x-admin.image-upload name="hero_image" label="Hero Image" :value="old('hero_image')" />
+                <x-admin.image-upload name="hero_image" label="Hero Image" aspectRatio="16/9" :value="old('hero_image')" />
             </div>
 
             <div>

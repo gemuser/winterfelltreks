@@ -1,8 +1,16 @@
 @php
-    $heading = $elements['heading']?->content ?? 'Himalayan Gallery';
-    $subheading = $elements['subheading']?->content ?? '';
-    $viewAllText = $elements['view_all_text']?->content ?? 'View Full Gallery';
-    $viewAllUrl = $elements['view_all_url']?->content ?? url('/gallery');
+    $headingEl = $elements['heading'] ?? $elements['headline'] ?? $elements['title'] ?? null;
+    $heading = $headingEl?->content ?? 'Himalayan Gallery';
+    $subheadingEl = $elements['subheading'] ?? $elements['subheadline'] ?? $elements['subtitle'] ?? null;
+    $subheading = $subheadingEl?->content ?? '';
+    $badgeEl = $elements['badge'] ?? $elements['tag'] ?? null;
+    $badge = $badgeEl?->content ?? 'Visual Chronicles';
+
+    $viewAllEl = $elements['view_all'] ?? $elements['view_all_url'] ?? $elements['view_all_text'] ?? $elements['primary_cta'] ?? $elements['cta'] ?? null;
+    $viewAllData = $viewAllEl ? (is_array($viewAllEl->getContent()) ? $viewAllEl->getContent() : (is_string($viewAllEl->content) && str_starts_with(trim($viewAllEl->content), '{') ? json_decode($viewAllEl->content, true) : null)) : null;
+    $viewAllText = $viewAllData['text'] ?? ($viewAllEl && is_string($viewAllEl->content) && !str_starts_with(trim($viewAllEl->content), '{') && !str_starts_with($viewAllEl->content, 'http') && !str_starts_with($viewAllEl->content, '/') ? $viewAllEl->content : ($elements['view_all_text']?->content ?? 'View Full Gallery'));
+    $viewAllUrl = $viewAllData['url'] ?? ($viewAllEl && is_string($viewAllEl->content) && (str_starts_with($viewAllEl->content, 'http') || str_starts_with($viewAllEl->content, '/')) ? $viewAllEl->content : ($elements['view_all_url']?->content ?? url('/gallery')));
+
     $images = $elements['images']?->getRepeaterItems() ?? [];
     $allImages = !empty($images) ? $images : ($pageData['images'] ?? collect());
     $categories = $pageData['categories'] ?? collect();
@@ -14,7 +22,6 @@
         default => 'lg:grid-cols-4',
     };
     $showViewAll = $settings['show_view_all'] ?? false;
-    $lightbox = $settings['lightbox'] ?? true;
 @endphp
 
 @if(!empty($allImages) && count($allImages))
@@ -23,17 +30,20 @@
         {{-- Section Header --}}
         <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-10" data-gsap="fade-up">
             <div>
+                @if($badge)
+                <span data-key="badge" @if($badgeEl) data-element-id="{{ $badgeEl->id }}" @endif class="text-accent-primary font-medium text-xs sm:text-sm tracking-widest uppercase block mb-2">{{ $badge }}</span>
+                @endif
                 @if($heading)
-                <h2 class="font-display text-3xl sm:text-4xl font-bold text-text-primary tracking-tight">
+                <h2 data-key="heading" data-element-id="{{ $headingEl?->id ?? '' }}" class="font-display text-3xl sm:text-4xl font-bold text-text-primary tracking-tight">
                     {{ $heading }}
                 </h2>
                 @endif
                 @if($subheading)
-                <p class="text-text-secondary mt-2 text-lg">{{ $subheading }}</p>
+                <p data-key="subheading" data-element-id="{{ $subheadingEl?->id ?? '' }}" class="text-text-secondary mt-2 text-lg">{{ $subheading }}</p>
                 @endif
             </div>
             @if($showViewAll && $viewAllUrl && !request()->is('gallery'))
-            <a href="{{ $viewAllUrl }}" class="btn-secondary mt-4 sm:mt-0 whitespace-nowrap self-start sm:self-auto">
+            <a href="{{ $viewAllUrl }}" data-key="view_all" @if($viewAllEl) data-element-id="{{ $viewAllEl->id }}" @endif class="btn-secondary mt-4 sm:mt-0 whitespace-nowrap self-start sm:self-auto">
                 {{ $viewAllText }}
                 <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
@@ -54,8 +64,8 @@
             @foreach($categories as $cat)
             <button 
                 type="button" 
-                class="px-4 py-1.5 text-xs font-semibold uppercase tracking-wider rounded-full border border-gray-200 text-text-secondary hover:border-accent-primary hover:text-accent-primary transition-colors"
-                onclick="window.location.href='{{ url('/gallery?category=' . $cat->id) }}'">
+                class="px-4 py-1.5 text-xs font-semibold uppercase tracking-wider rounded-full border border-gray-200 transition-colors bg-white text-text-secondary hover:border-accent-primary hover:text-accent-primary"
+                onclick="window.location.href='{{ url('/gallery?category=' . urlencode($cat->name)) }}'">
                 {{ $cat->name }}
             </button>
             @endforeach
@@ -63,41 +73,27 @@
         @endif
 
         {{-- Masonry Grid --}}
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 {{ $colClass }} gap-4" role="list">
+        <div class="grid grid-cols-1 sm:grid-cols-2 {{ $colClass }} gap-4 sm:gap-6" role="list">
             @foreach($allImages as $index => $img)
             @php
-                $url = is_object($img) ? ($img->image ?? $img->url) : ($img['image'] ?? $img['url'] ?? '');
-                $alt = is_object($img) ? ($img->alt_text ?? $img->title ?? 'Himalayan photograph') : ($img['alt'] ?? $img['alt_text'] ?? $img['title'] ?? 'Himalayan photograph');
-                $title = is_object($img) ? ($img->title ?? '') : ($img['title'] ?? '');
-                $location = is_object($img) ? ($img->location ?? '') : ($img['location'] ?? '');
+                $isModel = $img instanceof \App\Models\GalleryImage;
+                $imageUrl = $isModel ? $img->image_url : ($img['url'] ?? $img['image_url'] ?? '');
+                $caption = $isModel ? $img->caption : ($img['caption'] ?? '');
+                $category = $isModel ? $img->category?->name : ($img['category'] ?? '');
             @endphp
-            @if($url)
-            <article class="gallery-item group relative aspect-[4/3] overflow-hidden bg-gray-100 border border-gray-100" data-gsap="fade-up" data-gsap-delay="{{ ($index % 8) * 0.05 }}">
-                <a href="{{ $url }}" {{ $lightbox ? 'data-lightbox=' . $url . ' data-lightbox-alt=' . htmlspecialchars($alt) : '' }} class="block w-full h-full cursor-zoom-in">
-                    <img src="{{ $url }}" alt="{{ $alt }}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy" decoding="async">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4 text-white">
-                        @if($title)
-                        <h4 class="font-display text-sm font-semibold mb-0.5 leading-snug">{{ $title }}</h4>
-                        @endif
-                        @if($location)
-                        <span class="text-xs text-accent-light flex items-center gap-1">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg>
-                            {{ $location }}
-                        </span>
-                        @endif
-                    </div>
-                </a>
-            </article>
-            @endif
+            <div class="gallery-item group relative overflow-hidden bg-gray-100 aspect-[4/3] shadow-sm hover:shadow-md transition-shadow" data-gsap="fade-up" data-gsap-delay="{{ $index * 0.04 }}">
+                <img src="{{ $imageUrl }}" alt="{{ $caption ?: 'Himalayan mountain scenery' }}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy" decoding="async">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6">
+                    @if($category)
+                    <span class="text-accent-primary text-xs font-semibold uppercase tracking-wider mb-1">{{ $category }}</span>
+                    @endif
+                    @if($caption)
+                    <p class="text-white text-sm font-medium line-clamp-2">{{ $caption }}</p>
+                    @endif
+                </div>
+            </div>
             @endforeach
         </div>
-
-        {{-- Pagination --}}
-        @if(is_object($allImages) && method_exists($allImages, 'links'))
-        <div class="mt-12">
-            {{ $allImages->links() }}
-        </div>
-        @endif
     </div>
 </section>
 @endif

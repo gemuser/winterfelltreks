@@ -132,29 +132,35 @@
                              data-key="{{ $cEl->element_key }}"
                              data-element-id="{{ $cEl->id }}"
                              style="position: {{ $pos }}; top: {{ $top }}; left: {{ $left }}; transform: {{ $transform }}; @if($width) width: {{ $width }}; max-width: 95vw; @else max-width: 90%; @endif z-index: 25;">
+                            @php
+                                $cContent = $cEl->getContent();
+                                $cText = is_array($cContent) ? ($cContent['text'] ?? $cContent['title'] ?? reset($cContent)) : $cContent;
+                                $cLinkUrl = $cEl->getLinkUrl() ?: (is_array($cContent) ? ($cContent['url'] ?? '#') : '#');
+                                $cLinkText = $cEl->getLinkText() ?: (is_array($cContent) ? ($cContent['text'] ?? 'Explore More') : (is_string($cContent) ? $cContent : 'Explore More'));
+                            @endphp
                             @if($cEl->element_type === 'component' || str_contains($cEl->element_key, 'comp_') || str_contains($cEl->element_key, 'search') || str_contains($cEl->element_key, 'badge') || str_contains($cEl->element_key, 'card'))
                                 @include('components.canva_component', ['cEl' => $cEl, 'isEditor' => false])
                             @elseif($cEl->element_type === 'image' || str_contains($cEl->element_key, 'photo') || str_contains($cEl->element_key, 'image'))
                                 @include('components.canva_photo_box', ['cEl' => $cEl, 'isEditor' => false, 'elStyles' => $elStyles])
                             @elseif($cEl->element_type === 'link')
-                                <a href="{{ $cEl->getLinkUrl() ?? '#' }}" data-key="{{ $cEl->element_key }}" class="canva-custom-button btn-primary py-2.5 px-6 font-semibold inline-block shadow-md">
-                                    {{ $cEl->getLinkText() ?? 'Explore More' }}
+                                <a href="{{ $cLinkUrl }}" data-key="{{ $cEl->element_key }}" class="canva-custom-button btn-primary py-2.5 px-6 font-semibold inline-block shadow-md">
+                                    {{ $cLinkText }}
                                 </a>
                             @elseif(str_contains($cEl->element_key, 'headline'))
-                                <h3 data-key="{{ $cEl->element_key }}" class="canva-custom-text font-display font-bold text-3xl text-white drop-shadow-lg">
-                                    {{ is_string($cEl->content) ? $cEl->content : ($cEl->content['text'] ?? '') }}
+                                <h3 data-key="{{ $cEl->element_key }}" class="canva-custom-text font-display font-bold text-3xl drop-shadow-sm" style="color: {{ $elStyles['color'] ?? '#111827' }};">
+                                    {{ $cText }}
                                 </h3>
                             @elseif(str_contains($cEl->element_key, 'subheading'))
-                                <div data-key="{{ $cEl->element_key }}" class="canva-custom-text font-body text-xl font-medium text-gray-100 drop-shadow-md">
-                                    {{ is_string($cEl->content) ? $cEl->content : ($cEl->content['text'] ?? '') }}
+                                <div data-key="{{ $cEl->element_key }}" class="canva-custom-text font-body text-xl font-medium drop-shadow-sm" style="color: {{ $elStyles['color'] ?? '#374151' }};">
+                                    {{ $cText }}
                                 </div>
                             @elseif(str_contains($cEl->element_key, 'body'))
-                                <div data-key="{{ $cEl->element_key }}" class="canva-custom-text prose max-w-xl text-gray-200 drop-shadow">
-                                    {!! is_string($cEl->content) ? $cEl->content : ($cEl->content['text'] ?? '') !!}
+                                <div data-key="{{ $cEl->element_key }}" class="canva-custom-text prose max-w-xl drop-shadow-sm" style="color: {{ $elStyles['color'] ?? '#4b5563' }};">
+                                    {!! $cText !!}
                                 </div>
                             @else
-                                <div data-key="{{ $cEl->element_key }}" class="canva-custom-text font-body text-base text-white drop-shadow">
-                                    {{ is_string($cEl->content) ? $cEl->content : ($cEl->content['text'] ?? '') }}
+                                <div data-key="{{ $cEl->element_key }}" class="canva-custom-text font-body text-base drop-shadow-sm" style="color: {{ $elStyles['color'] ?? '#111827' }};">
+                                    {{ $cText }}
                                 </div>
                             @endif
                         </div>
@@ -192,33 +198,39 @@
                              data-key="{{ $cEl->element_key }}"
                              data-element-id="{{ $cEl->id }}"
                              style="position: {{ $pos }}; top: {{ $top }}; left: {{ $left }}; transform: {{ $transform }}; @if($width) width: {{ $width }}; max-width: 95vw; @else max-width: 90%; @endif z-index: 25;">
+                            @php
+                                $cContent = $cEl->getContent();
+                                $cText = is_array($cContent) ? ($cContent['text'] ?? $cContent['title'] ?? reset($cContent)) : $cContent;
+                                $cLinkUrl = $cEl->getLinkUrl() ?: (is_array($cContent) ? ($cContent['url'] ?? '#') : '#');
+                                $cLinkText = $cEl->getLinkText() ?: (is_array($cContent) ? ($cContent['text'] ?? 'Explore More') : (is_string($cContent) ? $cContent : 'Explore More'));
+                            @endphp
                             @if($cEl->element_type === 'component' || str_contains($cEl->element_key, 'comp_') || str_contains($cEl->element_key, 'search') || str_contains($cEl->element_key, 'badge') || str_contains($cEl->element_key, 'card'))
                                 @include('components.canva_component', ['cEl' => $cEl, 'isEditor' => false])
                             @elseif($cEl->element_type === 'image' || str_contains($cEl->element_key, 'photo') || str_contains($cEl->element_key, 'image'))
                                 @include('components.canva_photo_box', ['cEl' => $cEl, 'isEditor' => false, 'elStyles' => $elStyles])
                             @elseif($cEl->element_type === 'link')
-                                <a href="{{ $cEl->getLinkUrl() ?? '#' }}" data-key="{{ $cEl->element_key }}" class="canva-custom-button btn-primary py-2.5 px-6 font-semibold inline-block shadow-md">
-                                    {{ $cEl->getLinkText() ?? 'Explore More' }}
+                                <a href="{{ $cLinkUrl }}" data-key="{{ $cEl->element_key }}" class="canva-custom-button btn-primary py-2.5 px-6 font-semibold inline-block shadow-md">
+                                    {{ $cLinkText }}
                                 </a>
                             @elseif(str_contains($cEl->element_key, 'headline'))
-                                <h3 data-key="{{ $cEl->element_key }}" class="canva-custom-text font-display font-bold text-3xl text-white drop-shadow-lg">
-                                    {{ is_string($cEl->content) ? $cEl->content : ($cEl->content['text'] ?? '') }}
+                                <h3 data-key="{{ $cEl->element_key }}" class="canva-custom-text font-display font-bold text-3xl drop-shadow-sm" style="color: {{ $elStyles['color'] ?? '#111827' }};">
+                                    {{ $cText }}
                                 </h3>
                             @elseif(str_contains($cEl->element_key, 'subheading'))
-                                <div data-key="{{ $cEl->element_key }}" class="canva-custom-text font-body text-xl font-medium text-gray-100 drop-shadow-md">
-                                    {{ is_string($cEl->content) ? $cEl->content : ($cEl->content['text'] ?? '') }}
+                                <div data-key="{{ $cEl->element_key }}" class="canva-custom-text font-body text-xl font-medium drop-shadow-sm" style="color: {{ $elStyles['color'] ?? '#374151' }};">
+                                    {{ $cText }}
                                 </div>
                             @elseif(str_contains($cEl->element_key, 'body'))
-                                <div data-key="{{ $cEl->element_key }}" class="canva-custom-text prose max-w-xl text-gray-200 drop-shadow">
-                                    {!! is_string($cEl->content) ? $cEl->content : ($cEl->content['text'] ?? '') !!}
+                                <div data-key="{{ $cEl->element_key }}" class="canva-custom-text prose max-w-xl drop-shadow-sm" style="color: {{ $elStyles['color'] ?? '#4b5563' }};">
+                                    {!! $cText !!}
                                 </div>
                             @else
-                                <div data-key="{{ $cEl->element_key }}" class="canva-custom-text font-body text-base text-white drop-shadow">
-                                    {{ is_string($cEl->content) ? $cEl->content : ($cEl->content['text'] ?? '') }}
+                                <div data-key="{{ $cEl->element_key }}" class="canva-custom-text font-body text-base drop-shadow-sm" style="color: {{ $elStyles['color'] ?? '#111827' }};">
+                                    {{ $cText }}
                                 </div>
                             @endif
                         </div>
-                        @endforeach
+                    @endforeach
                     @endif
                 </div>
             @endforeach
@@ -254,33 +266,39 @@
                              data-key="{{ $cEl->element_key }}"
                              data-element-id="{{ $cEl->id }}"
                              style="position: {{ $pos }}; top: {{ $top }}; left: {{ $left }}; transform: {{ $transform }}; @if($width) width: {{ $width }}; max-width: 95vw; @else max-width: 90%; @endif z-index: 25;">
+                            @php
+                                $cContent = $cEl->getContent();
+                                $cText = is_array($cContent) ? ($cContent['text'] ?? $cContent['title'] ?? reset($cContent)) : $cContent;
+                                $cLinkUrl = $cEl->getLinkUrl() ?: (is_array($cContent) ? ($cContent['url'] ?? '#') : '#');
+                                $cLinkText = $cEl->getLinkText() ?: (is_array($cContent) ? ($cContent['text'] ?? 'Explore More') : (is_string($cContent) ? $cContent : 'Explore More'));
+                            @endphp
                             @if($cEl->element_type === 'component' || str_contains($cEl->element_key, 'comp_') || str_contains($cEl->element_key, 'search') || str_contains($cEl->element_key, 'badge') || str_contains($cEl->element_key, 'card'))
                                 @include('components.canva_component', ['cEl' => $cEl, 'isEditor' => false])
                             @elseif($cEl->element_type === 'image' || str_contains($cEl->element_key, 'photo') || str_contains($cEl->element_key, 'image'))
                                 @include('components.canva_photo_box', ['cEl' => $cEl, 'isEditor' => false, 'elStyles' => $elStyles])
                             @elseif($cEl->element_type === 'link')
-                                <a href="{{ $cEl->getLinkUrl() ?? '#' }}" data-key="{{ $cEl->element_key }}" class="canva-custom-button btn-primary py-2.5 px-6 font-semibold inline-block shadow-md">
-                                    {{ $cEl->getLinkText() ?? 'Explore More' }}
+                                <a href="{{ $cLinkUrl }}" data-key="{{ $cEl->element_key }}" class="canva-custom-button btn-primary py-2.5 px-6 font-semibold inline-block shadow-md">
+                                    {{ $cLinkText }}
                                 </a>
                             @elseif(str_contains($cEl->element_key, 'headline'))
-                                <h3 data-key="{{ $cEl->element_key }}" class="canva-custom-text font-display font-bold text-3xl text-white drop-shadow-lg">
-                                    {{ is_string($cEl->content) ? $cEl->content : ($cEl->content['text'] ?? '') }}
+                                <h3 data-key="{{ $cEl->element_key }}" class="canva-custom-text font-display font-bold text-3xl drop-shadow-sm" style="color: {{ $elStyles['color'] ?? '#111827' }};">
+                                    {{ $cText }}
                                 </h3>
                             @elseif(str_contains($cEl->element_key, 'subheading'))
-                                <div data-key="{{ $cEl->element_key }}" class="canva-custom-text font-body text-xl font-medium text-gray-100 drop-shadow-md">
-                                    {{ is_string($cEl->content) ? $cEl->content : ($cEl->content['text'] ?? '') }}
+                                <div data-key="{{ $cEl->element_key }}" class="canva-custom-text font-body text-xl font-medium drop-shadow-sm" style="color: {{ $elStyles['color'] ?? '#374151' }};">
+                                    {{ $cText }}
                                 </div>
                             @elseif(str_contains($cEl->element_key, 'body'))
-                                <div data-key="{{ $cEl->element_key }}" class="canva-custom-text prose max-w-xl text-gray-200 drop-shadow">
-                                    {!! is_string($cEl->content) ? $cEl->content : ($cEl->content['text'] ?? '') !!}
+                                <div data-key="{{ $cEl->element_key }}" class="canva-custom-text prose max-w-xl drop-shadow-sm" style="color: {{ $elStyles['color'] ?? '#4b5563' }};">
+                                    {!! $cText !!}
                                 </div>
                             @else
-                                <div data-key="{{ $cEl->element_key }}" class="canva-custom-text font-body text-base text-white drop-shadow">
-                                    {{ is_string($cEl->content) ? $cEl->content : ($cEl->content['text'] ?? '') }}
+                                <div data-key="{{ $cEl->element_key }}" class="canva-custom-text font-body text-base drop-shadow-sm" style="color: {{ $elStyles['color'] ?? '#111827' }};">
+                                    {{ $cText }}
                                 </div>
                             @endif
                         </div>
-                        @endforeach
+                    @endforeach
                     @endif
                 </div>
             @endforeach

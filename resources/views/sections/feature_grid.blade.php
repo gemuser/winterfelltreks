@@ -1,5 +1,10 @@
 @php
-    $heading = $elements['heading']?->content ?? 'Why Choose Winterfell Treks';
+    $headingEl = $elements['heading'] ?? $elements['headline'] ?? $elements['title'] ?? null;
+    $heading = $headingEl?->content ?? 'Why Choose Winterfell Treks';
+    $subheadingEl = $elements['subheading'] ?? $elements['subheadline'] ?? $elements['subtitle'] ?? null;
+    $subheading = $subheadingEl?->content ?? '';
+    $badgeEl = $elements['badge'] ?? $elements['tag'] ?? null;
+    $badge = $badgeEl?->content ?? 'The Winterfell Difference';
     $features = $elements['features']?->getRepeaterItems() ?? [];
     $columns = (int)($settings['columns'] ?? 3);
     $colClass = match($columns) {
@@ -14,9 +19,15 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         @if($heading)
         <div class="max-w-3xl mb-12" data-gsap="fade-up">
-            <h2 class="font-display text-3xl sm:text-4xl font-bold text-text-primary tracking-tight">
+            @if($badge)
+            <span data-key="badge" @if($badgeEl) data-element-id="{{ $badgeEl->id }}" @endif class="text-accent-primary font-medium text-xs sm:text-sm tracking-widest uppercase block mb-2">{{ $badge }}</span>
+            @endif
+            <h2 data-key="heading" data-element-id="{{ $headingEl?->id ?? '' }}" class="font-display text-3xl sm:text-4xl font-bold text-text-primary tracking-tight">
                 {{ $heading }}
             </h2>
+            @if($subheading)
+            <p data-key="subheading" data-element-id="{{ $subheadingEl?->id ?? '' }}" class="text-text-secondary mt-3 text-base sm:text-lg">{{ $subheading }}</p>
+            @endif
         </div>
         @endif
 

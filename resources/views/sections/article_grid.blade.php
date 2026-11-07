@@ -1,20 +1,27 @@
 @php
-    $heading = $elements['heading']?->content ?? 'Travel Journal';
-    $subheading = $elements['subheading']?->content ?? 'Stories, guides, and inspiration from the heart of the Himalayas.';
-    $viewAllText = $elements['view_all_text']?->content ?? 'Read All Articles';
-    $viewAllUrl = $elements['view_all_url']?->content ?? url('/travel-guide');
+    $headingEl = $elements['heading'] ?? $elements['headline'] ?? $elements['title'] ?? null;
+    $heading = $headingEl?->content ?? 'Travel Journal';
+    $subheadingEl = $elements['subheading'] ?? $elements['subheadline'] ?? $elements['subtitle'] ?? null;
+    $subheading = $subheadingEl?->content ?? 'Stories, guides, and inspiration from the heart of the Himalayas.';
+    $badgeEl = $elements['badge'] ?? $elements['tag'] ?? null;
+    $badge = $badgeEl?->content ?? 'Expedition Journal';
+
+    // View All Button
+    $viewAllEl = $elements['view_all'] ?? $elements['view_all_url'] ?? $elements['view_all_text'] ?? $elements['primary_cta'] ?? $elements['cta'] ?? null;
+    $viewAllData = $viewAllEl ? (is_array($viewAllEl->getContent()) ? $viewAllEl->getContent() : (is_string($viewAllEl->content) && str_starts_with(trim($viewAllEl->content), '{') ? json_decode($viewAllEl->content, true) : null)) : null;
+    $viewAllText = $viewAllData['text'] ?? ($viewAllEl && is_string($viewAllEl->content) && !str_starts_with(trim($viewAllEl->content), '{') && !str_starts_with($viewAllEl->content, 'http') && !str_starts_with($viewAllEl->content, '/') ? $viewAllEl->content : ($elements['view_all_text']?->content ?? 'Read All Articles'));
+    $viewAllUrl = $viewAllData['url'] ?? ($viewAllEl && is_string($viewAllEl->content) && (str_starts_with($viewAllEl->content, 'http') || str_starts_with($viewAllEl->content, '/')) ? $viewAllEl->content : ($elements['view_all_url']?->content ?? url('/travel-guide')));
+
     $articles = $elements['articles']?->getRepeaterItems() ?? [];
     $columns = (int)($settings['columns'] ?? 3);
     $showViewAll = $settings['show_view_all'] ?? true;
 
-    // Grid column class mapping to avoid Tailwind dynamic compilation failure
     $gridClass = match($columns) {
         2 => 'lg:grid-cols-2',
         4 => 'lg:grid-cols-4',
         default => 'lg:grid-cols-3',
     };
 
-    // If repeater items are empty, fallback to published blog posts
     $allArticles = !empty($articles) ? $articles : ($pageData['posts'] ?? null);
     if (empty($allArticles) || (is_countable($allArticles) && count($allArticles) === 0)) {
         $allArticles = \App\Models\BlogPost::published()->with('category')->latest('published_at')->take($columns ?: 3)->get();
@@ -26,18 +33,20 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-12" data-gsap="fade-up">
             <div>
-                <span class="text-accent-primary font-medium text-xs sm:text-sm tracking-widest uppercase block mb-2">Expedition Journal</span>
+                @if($badge)
+                <span data-key="badge" @if($badgeEl) data-element-id="{{ $badgeEl->id }}" @endif class="text-accent-primary font-medium text-xs sm:text-sm tracking-widest uppercase block mb-2">{{ $badge }}</span>
+                @endif
                 @if($heading)
-                <h2 class="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-text-primary tracking-tight">
+                <h2 data-key="heading" data-element-id="{{ $headingEl?->id ?? '' }}" class="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-text-primary tracking-tight">
                     {{ $heading }}
                 </h2>
                 @endif
                 @if($subheading)
-                <p class="text-text-secondary mt-3 text-base sm:text-lg max-w-2xl">{{ $subheading }}</p>
+                <p data-key="subheading" data-element-id="{{ $subheadingEl?->id ?? '' }}" class="text-text-secondary mt-3 text-base sm:text-lg max-w-2xl">{{ $subheading }}</p>
                 @endif
             </div>
             @if($showViewAll && $viewAllUrl)
-            <a href="{{ $viewAllUrl }}" class="btn-secondary mt-4 sm:mt-0 whitespace-nowrap self-start sm:self-auto">
+            <a href="{{ $viewAllUrl }}" data-key="view_all" @if($viewAllEl) data-element-id="{{ $viewAllEl->id }}" @endif class="btn-secondary mt-4 sm:mt-0 whitespace-nowrap self-start sm:self-auto">
                 {{ $viewAllText }}
                 <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
@@ -94,11 +103,9 @@
                         @endif
                     </div>
                     <div class="pt-4 border-t border-gray-100 mt-auto">
-                        <a href="{{ url('/travel-guide/' . $slug) }}" class="inline-flex items-center gap-1.5 text-accent-primary font-semibold text-sm hover:gap-2.5 transition-all">
-                            Read Full Article
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                            </svg>
+                        <a href="{{ url('/travel-guide/' . $slug) }}" class="text-sm font-semibold text-accent-primary hover:text-accent-light inline-flex items-center gap-1 group/link">
+                            Read Journal
+                            <svg class="w-4 h-4 transition-transform group-hover/link:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
                         </a>
                     </div>
                 </div>

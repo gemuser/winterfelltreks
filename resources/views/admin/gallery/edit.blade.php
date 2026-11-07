@@ -40,7 +40,7 @@
                 </div>
 
                 <div class="md:col-span-2">
-                    <x-admin.image-upload name="image" label="Photo File" :value="old('image', $image->image)" :required="true" />
+                    <x-admin.image-upload name="image" label="Photo File" aspectRatio="4/3" :value="old('image', $image->image)" :required="true" />
                 </div>
 
                 <div>

@@ -1,5 +1,6 @@
 @php
-    $heading = $elements['heading']?->content ?? 'Featured Guide';
+    $heading = $elements['heading']?->content ?? $elements['headline']?->content ?? $elements['title']?->content ?? 'Featured Guide';
+    $headingEl = $elements['heading'] ?? $elements['headline'] ?? $elements['title'] ?? null;
     $featured = $pageData['featured'] ?? null;
 @endphp
 
@@ -8,7 +9,7 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         @if($heading)
         <div class="mb-8" data-gsap="fade-up">
-            <h2 class="font-display text-2xl sm:text-3xl font-bold text-text-primary tracking-tight">
+            <h2 class="font-display text-2xl sm:text-3xl font-bold text-text-primary tracking-tight" data-key="heading" @if($headingEl) data-element-id="{{ $headingEl->id }}" @endif>
                 {{ $heading }}
             </h2>
         </div>

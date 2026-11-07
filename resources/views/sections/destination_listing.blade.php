@@ -15,6 +15,35 @@
 
 <section class="py-20 lg:py-32 bg-background-alt" id="{{ $section->custom_anchor_id ?: ('section-' . $section->id) }}" data-section-id="{{ $section->id }}">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        @php
+            $heading = $elements['heading']?->content ?? $elements['headline']?->content ?? $elements['title']?->content ?? null;
+            $headingEl = $elements['heading'] ?? $elements['headline'] ?? $elements['title'] ?? null;
+            $subheading = $elements['subheading']?->content ?? $elements['subheadline']?->content ?? $elements['subtitle']?->content ?? null;
+            $subheadingEl = $elements['subheading'] ?? $elements['subheadline'] ?? $elements['subtitle'] ?? null;
+            $badge = $elements['badge']?->content ?? $elements['tag']?->content ?? null;
+            $badgeEl = $elements['badge'] ?? $elements['tag'] ?? null;
+        @endphp
+
+        @if($heading || $subheading || $badge)
+        <div class="text-center max-w-3xl mx-auto mb-10" data-gsap="fade-up">
+            @if($badge)
+            <span class="inline-block text-accent-primary text-xs uppercase tracking-widest font-semibold mb-3" data-key="badge" @if($badgeEl) data-element-id="{{ $badgeEl->id }}" @endif>
+                {{ $badge }}
+            </span>
+            @endif
+            @if($heading)
+            <h2 class="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-text-primary tracking-tight mb-4" data-key="heading" @if($headingEl) data-element-id="{{ $headingEl->id }}" @endif>
+                {{ $heading }}
+            </h2>
+            @endif
+            @if($subheading)
+            <p class="text-text-secondary text-base sm:text-lg leading-relaxed" data-key="subheading" @if($subheadingEl) data-element-id="{{ $subheadingEl->id }}" @endif>
+                {{ $subheading }}
+            </p>
+            @endif
+        </div>
+        @endif
+
         {{-- Search --}}
         @if($showSearch)
         <div class="mb-8 lg:mb-12" data-gsap="fade-up">
@@ -117,7 +146,7 @@
         </div>
 
         {{-- Pagination --}}
-        @if($destinations->hasPages())
+        @if(method_exists($destinations, 'hasPages') && $destinations->hasPages())
         <div class="mt-12" data-gsap="fade-up">
             {{ $destinations->links() }}
         </div>

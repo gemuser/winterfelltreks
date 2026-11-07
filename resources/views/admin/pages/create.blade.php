@@ -50,7 +50,7 @@
         </div>
         
         <div>
-            <x-admin.image-upload name="og_image" label="Open Graph / Social Sharing Image" :value="old('og_image')" />
+            <x-admin.image-upload name="og_image" label="Open Graph / Social Sharing Image" aspectRatio="16/9" :value="old('og_image')" />
         </div>
         
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">

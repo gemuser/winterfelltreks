@@ -1,6 +1,10 @@
 @php
-    $heading = $elements['heading']?->content ?? 'Our Mountain Leadership';
-    $subheading = $elements['subheading']?->content ?? 'Decades of combined high-altitude mountaineering expertise, indigenous sherpa heritage, and world-class logistics.';
+    $headingEl = $elements['heading'] ?? $elements['headline'] ?? $elements['title'] ?? null;
+    $heading = $headingEl?->content ?? 'Our Mountain Leadership';
+    $subheadingEl = $elements['subheading'] ?? $elements['subheadline'] ?? $elements['subtitle'] ?? null;
+    $subheading = $subheadingEl?->content ?? 'Decades of combined high-altitude mountaineering expertise, indigenous sherpa heritage, and world-class logistics.';
+    $badgeEl = $elements['badge'] ?? $elements['tag'] ?? null;
+    $badge = $badgeEl?->content ?? 'The People Behind Your Summit';
     $team = $elements['team']?->getRepeaterItems() ?? [];
     $columns = (int)($settings['columns'] ?? 3);
 
@@ -39,12 +43,14 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         @if($heading)
         <div class="text-center max-w-3xl mx-auto mb-16 sm:mb-20" data-gsap="fade-up">
-            <span class="text-accent-primary font-medium text-xs sm:text-sm tracking-widest uppercase block mb-2">The People Behind Your Summit</span>
-            <h2 class="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-text-primary tracking-tight">
+            @if($badge)
+            <span data-key="badge" @if($badgeEl) data-element-id="{{ $badgeEl->id }}" @endif class="text-accent-primary font-medium text-xs sm:text-sm tracking-widest uppercase block mb-2">{{ $badge }}</span>
+            @endif
+            <h2 data-key="heading" data-element-id="{{ $headingEl?->id ?? '' }}" class="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-text-primary tracking-tight">
                 {{ $heading }}
             </h2>
             @if($subheading)
-            <p class="text-text-secondary mt-3 text-base sm:text-lg">{{ $subheading }}</p>
+            <p data-key="subheading" data-element-id="{{ $subheadingEl?->id ?? '' }}" class="text-text-secondary mt-3 text-base sm:text-lg">{{ $subheading }}</p>
             @endif
         </div>
         @endif
@@ -56,26 +62,11 @@
             @endphp
             <article class="team-card group text-center flex flex-col items-center bg-white border border-gray-100 p-8 hover:border-gray-200 hover:shadow-lg transition-[border-color,box-shadow] duration-300" data-gsap="fade-up" data-gsap-delay="{{ $index * 0.05 }}">
                 <div class="relative w-40 h-40 sm:w-48 sm:h-48 rounded-full overflow-hidden mb-6 border-4 border-gray-100 group-hover:border-accent-primary transition-colors duration-300 shadow-md">
-                    <img src="{{ $img }}" alt="{{ $member['name'] ?? 'Team member' }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" decoding="async">
+                    <img src="{{ $img }}" alt="{{ $member['name'] ?? 'Team Member' }}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" decoding="async">
                 </div>
-                
-                @if(isset($member['name']))
-                <h3 class="font-display text-xl sm:text-2xl font-bold text-text-primary mb-1">
-                    {{ $member['name'] }}
-                </h3>
-                @endif
-                
-                @if(isset($member['position']))
-                <p class="text-accent-primary font-semibold text-xs sm:text-sm uppercase tracking-wider mb-4">
-                    {{ $member['position'] }}
-                </p>
-                @endif
-                
-                @if(isset($member['bio']))
-                <p class="text-text-secondary text-sm leading-relaxed max-w-sm">
-                    {{ $member['bio'] }}
-                </p>
-                @endif
+                <h3 class="font-display text-xl font-bold text-text-primary mb-1">{{ $member['name'] ?? '' }}</h3>
+                <p class="text-accent-primary text-xs font-semibold uppercase tracking-wider mb-4">{{ $member['position'] ?? '' }}</p>
+                <p class="text-text-secondary text-sm leading-relaxed max-w-xs">{{ $member['bio'] ?? '' }}</p>
             </article>
             @endforeach
         </div>

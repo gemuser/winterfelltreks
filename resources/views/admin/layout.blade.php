@@ -15,6 +15,10 @@
     
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     
+    {{-- Local High-Performance Image Cropper --}}
+    <link rel="stylesheet" href="{{ asset('vendor/cropperjs/cropper.min.css') }}">
+    <script src="{{ asset('vendor/cropperjs/cropper.min.js') }}"></script>
+    
     <style>
         /* Sidebar always visible on large screens */
         @media (min-width: 1024px) {

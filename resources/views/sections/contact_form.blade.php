@@ -1,18 +1,28 @@
 @php
-    $heading = $elements['heading']?->content ?? 'Send Us a Message';
-    $subheading = $elements['subheading']?->content ?? 'Our travel specialists are here to answer your questions and help you plan.';
+    $headingEl = $elements['heading'] ?? $elements['headline'] ?? $elements['title'] ?? null;
+    $heading = $headingEl?->content ?? 'Send Us a Message';
+    $subheadingEl = $elements['subheading'] ?? $elements['subheadline'] ?? $elements['subtitle'] ?? null;
+    $subheading = $subheadingEl?->content ?? 'Our travel specialists are here to answer your questions and help you plan.';
+    $badgeEl = $elements['badge'] ?? $elements['tag'] ?? null;
+    $badge = $badgeEl?->content ?? 'Direct Communication';
+
+    $btnEl = $elements['button_text'] ?? $elements['primary_cta'] ?? $elements['cta'] ?? $elements['button'] ?? null;
+    $buttonText = $btnEl ? (is_array($btnEl->getContent()) ? ($btnEl->getContent()['text'] ?? '') : $btnEl->content) : 'Send Message';
 @endphp
 
 <section class="py-16 lg:py-24 bg-background-alt" id="{{ $section->custom_anchor_id ?: ('section-' . $section->id) }}" data-section-id="{{ $section->id }}">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center max-w-2xl mx-auto mb-12" data-gsap="fade-up">
+            @if($badge)
+            <span data-key="badge" @if($badgeEl) data-element-id="{{ $badgeEl->id }}" @endif class="text-accent-primary font-medium text-xs sm:text-sm tracking-widest uppercase block mb-2">{{ $badge }}</span>
+            @endif
             @if($heading)
-            <h2 class="font-display text-3xl sm:text-4xl font-bold text-text-primary tracking-tight mb-4">
+            <h2 data-key="heading" data-element-id="{{ $headingEl?->id ?? '' }}" class="font-display text-3xl sm:text-4xl font-bold text-text-primary tracking-tight mb-4">
                 {{ $heading }}
             </h2>
             @endif
             @if($subheading)
-            <p class="text-text-secondary text-lg">
+            <p data-key="subheading" data-element-id="{{ $subheadingEl?->id ?? '' }}" class="text-text-secondary text-lg">
                 {{ $subheading }}
             </p>
             @endif
@@ -78,7 +88,7 @@
 
                 <div>
                     <button type="submit" class="btn-primary w-full py-4 text-base font-semibold tracking-wide" :disabled="submitting">
-                        <span x-show="!submitting">Send Message</span>
+                        <span x-show="!submitting" data-key="button_text" @if($btnEl) data-element-id="{{ $btnEl->id }}" @endif>{{ $buttonText }}</span>
                         <span x-show="submitting" x-cloak>Sending...</span>
                     </button>
                 </div>
@@ -86,4 +96,3 @@
         </div>
     </div>
 </section>
-

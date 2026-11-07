@@ -1,15 +1,37 @@
 @php
-    $heading = $elements['heading']?->content ?? 'Get in Touch';
+    $headingEl = $elements['heading'] ?? $elements['headline'] ?? $elements['title'] ?? null;
+    $heading = $headingEl?->content ?? 'Get in Touch';
     $layout = $settings['layout'] ?? 'grid';
     $contact = $globals['contact'] ?? [];
     $social = $globals['social'] ?? [];
+
+    // Fallbacks to support direct edits from the Visual Editor (both section elements and global settings)
+    $emailEl = $elements['email'] ?? $elements['secondary_cta'] ?? $elements['contact_email'] ?? null;
+    $emailRaw = $emailEl ? (is_array($emailEl->getContent()) ? ($emailEl->getContent()['text'] ?? $emailEl->getContent()['url'] ?? '') : $emailEl->content) : ($contact['email'] ?? 'info@winterfelltreks.com');
+    $emailText = str_starts_with($emailRaw, 'mailto:') ? substr($emailRaw, 7) : $emailRaw;
+    $emailUrl = 'mailto:' . $emailText;
+
+    $phoneEl = $elements['phone'] ?? $elements['primary_cta'] ?? $elements['contact_phone'] ?? null;
+    $phoneRaw = $phoneEl ? (is_array($phoneEl->getContent()) ? ($phoneEl->getContent()['text'] ?? '') : $phoneEl->content) : ($contact['phone'] ?? '+977-1-4000000');
+    $phoneText = $phoneRaw;
+    $phoneUrl = 'tel:' . preg_replace('/[^\d+]/', '', $phoneText);
+
+    $addressEl = $elements['address'] ?? $elements['contact_address'] ?? null;
+    $addressText = $addressEl ? (is_array($addressEl->getContent()) ? ($addressEl->getContent()['text'] ?? '') : $addressEl->content) : ($contact['address'] ?? 'Thamel, Kathmandu, Bagmati Province, Nepal');
+
+    $hoursEl = $elements['hours'] ?? $elements['business_hours'] ?? $elements['contact_hours'] ?? null;
+    $hoursText = $hoursEl ? (is_array($hoursEl->getContent()) ? ($hoursEl->getContent()['text'] ?? '') : $hoursEl->content) : ($contact['hours'] ?? 'Mon-Sat: 9:00 AM - 6:00 PM (NPT)');
+
+    $emergencyEl = $elements['phone_emergency'] ?? $elements['emergency_phone'] ?? null;
+    $emergencyText = $emergencyEl ? (is_array($emergencyEl->getContent()) ? ($emergencyEl->getContent()['text'] ?? '') : $emergencyEl->content) : ($contact['phone_emergency'] ?? '+977-9800000000');
+    $emergencyUrl = 'tel:' . preg_replace('/[^\d+]/', '', $emergencyText);
 @endphp
 
 <section class="py-20 lg:py-32" id="{{ $section->custom_anchor_id ?: ('section-' . $section->id) }}" data-section-id="{{ $section->id }}">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         @if($heading)
         <div class="max-w-3xl mb-12" data-gsap="fade-up">
-            <h2 class="font-display text-3xl sm:text-4xl font-bold text-text-primary tracking-tight">
+            <h2 data-key="heading" data-element-id="{{ $headingEl?->id ?? '' }}" class="font-display text-3xl sm:text-4xl font-bold text-text-primary tracking-tight">
                 {{ $heading }}
             </h2>
         </div>
@@ -20,28 +42,28 @@
             <div data-gsap="fade-up">
                 <h3 class="font-medium text-text-primary mb-4">Contact</h3>
                 <address class="not-italic space-y-4 text-text-secondary">
-                    @if($contact['phone'] ?? false)
-                    <a href="tel:{{ $contact['phone'] }}" class="flex items-center gap-3 hover:text-text-primary transition-colors">
+                    @if($phoneText)
+                    <a href="{{ $phoneUrl }}" data-key="phone" @if($phoneEl) data-element-id="{{ $phoneEl->id }}" @endif class="flex items-center gap-3 hover:text-text-primary transition-colors">
                         <svg class="w-6 h-6 text-accent-primary flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
-                        {{ $contact['phone'] }}
+                        <span>{{ $phoneText }}</span>
                     </a>
                     @endif
-                    @if($contact['email'] ?? false)
-                    <a href="mailto:{{ $contact['email'] }}" class="flex items-center gap-3 hover:text-text-primary transition-colors">
+                    @if($emailText)
+                    <a href="{{ $emailUrl }}" data-key="email" @if($emailEl) data-element-id="{{ $emailEl->id }}" @endif class="flex items-center gap-3 hover:text-text-primary transition-colors">
                         <svg class="w-6 h-6 text-accent-primary flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
-                        {{ $contact['email'] }}
+                        <span>{{ $emailText }}</span>
                     </a>
                     @endif
-                    @if($contact['address'] ?? false)
-                    <div class="flex items-start gap-3">
+                    @if($addressText)
+                    <div data-key="address" @if($addressEl) data-element-id="{{ $addressEl->id }}" @endif class="flex items-start gap-3">
                         <svg class="w-6 h-6 text-accent-primary flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                        {{ $contact['address'] }}
+                        <span>{{ $addressText }}</span>
                     </div>
                     @endif
-                    @if($contact['hours'] ?? false)
-                    <div class="flex items-center gap-3">
+                    @if($hoursText)
+                    <div data-key="hours" @if($hoursEl) data-element-id="{{ $hoursEl->id }}" @endif class="flex items-center gap-3">
                         <svg class="w-6 h-6 text-accent-primary flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        {{ $contact['hours'] }}
+                        <span>{{ $hoursText }}</span>
                     </div>
                     @endif
                 </address>
@@ -73,8 +95,8 @@
             <div data-gsap="fade-up" data-gsap-delay="0.2">
                 <h3 class="font-medium text-text-primary mb-4">Emergency</h3>
                 <p class="text-text-secondary mb-2">24/7 rescue coordination</p>
-                @if($contact['phone_emergency'] ?? false)
-                <a href="tel:{{ $contact['phone_emergency'] }}" class="text-accent-primary font-semibold hover:underline">{{ $contact['phone_emergency'] }}</a>
+                @if($emergencyText)
+                <a href="{{ $emergencyUrl }}" data-key="phone_emergency" @if($emergencyEl) data-element-id="{{ $emergencyEl->id }}" @endif class="text-accent-primary font-semibold hover:underline">{{ $emergencyText }}</a>
                 @endif
             </div>
         </div>

@@ -1,8 +1,16 @@
 @php
-    $heading = $elements['heading']?->content ?? 'Featured Expeditions';
-    $subheading = $elements['subheading']?->content ?? 'Curated adventures for every level of mountaineer and trekker';
-    $viewAllText = $elements['view_all_text']?->content ?? 'View All Packages';
-    $viewAllUrl = $elements['view_all_url']?->content ?? url('/packages');
+    $headingEl = $elements['heading'] ?? $elements['headline'] ?? $elements['title'] ?? null;
+    $heading = $headingEl?->content ?? 'Featured Expeditions';
+    $subheadingEl = $elements['subheading'] ?? $elements['subheadline'] ?? $elements['subtitle'] ?? null;
+    $subheading = $subheadingEl?->content ?? 'Curated adventures for every level of mountaineer and trekker';
+    $badgeEl = $elements['badge'] ?? $elements['tag'] ?? null;
+    $badge = $badgeEl?->content ?? 'Curated Trails';
+
+    $viewAllEl = $elements['view_all'] ?? $elements['view_all_url'] ?? $elements['view_all_text'] ?? $elements['primary_cta'] ?? $elements['cta'] ?? null;
+    $viewAllData = $viewAllEl ? (is_array($viewAllEl->getContent()) ? $viewAllEl->getContent() : (is_string($viewAllEl->content) && str_starts_with(trim($viewAllEl->content), '{') ? json_decode($viewAllEl->content, true) : null)) : null;
+    $viewAllText = $viewAllData['text'] ?? ($viewAllEl && is_string($viewAllEl->content) && !str_starts_with(trim($viewAllEl->content), '{') && !str_starts_with($viewAllEl->content, 'http') && !str_starts_with($viewAllEl->content, '/') ? $viewAllEl->content : ($elements['view_all_text']?->content ?? 'View All Packages'));
+    $viewAllUrl = $viewAllData['url'] ?? ($viewAllEl && is_string($viewAllEl->content) && (str_starts_with($viewAllEl->content, 'http') || str_starts_with($viewAllEl->content, '/')) ? $viewAllEl->content : ($elements['view_all_url']?->content ?? url('/packages')));
+
     $packages = $elements['packages']?->getRepeaterItems() ?? [];
     if (empty($packages)) {
         $packages = \App\Models\Expedition::published()->take(3)->get()->map(fn($p) => [
@@ -27,17 +35,20 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-12" data-gsap="fade-up">
             <div>
+                @if($badge)
+                <span data-key="badge" @if($badgeEl) data-element-id="{{ $badgeEl->id }}" @endif class="text-accent-primary font-medium text-xs sm:text-sm tracking-widest uppercase block mb-2">{{ $badge }}</span>
+                @endif
                 @if($heading)
-                <h2 class="font-display text-3xl sm:text-4xl font-bold text-text-primary tracking-tight">
+                <h2 data-key="heading" data-element-id="{{ $headingEl?->id ?? '' }}" class="font-display text-3xl sm:text-4xl font-bold text-text-primary tracking-tight">
                     {{ $heading }}
                 </h2>
                 @endif
                 @if($subheading)
-                <p class="text-text-secondary mt-2 text-lg">{{ $subheading }}</p>
+                <p data-key="subheading" data-element-id="{{ $subheadingEl?->id ?? '' }}" class="text-text-secondary mt-2 text-lg">{{ $subheading }}</p>
                 @endif
             </div>
             @if($showViewAll && $viewAllUrl)
-            <a href="{{ $viewAllUrl }}" class="btn-secondary mt-4 sm:mt-0 whitespace-nowrap self-start sm:self-auto">
+            <a href="{{ $viewAllUrl }}" data-key="view_all" @if($viewAllEl) data-element-id="{{ $viewAllEl->id }}" @endif class="btn-secondary mt-4 sm:mt-0 whitespace-nowrap self-start sm:self-auto">
                 {{ $viewAllText }}
                 <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
@@ -55,23 +66,18 @@
                     @endphp
                     <div class="aspect-[4/3] overflow-hidden relative bg-gray-100">
                         <img src="{{ $pkgImg }}" alt="{{ $pkg['name'] ?? 'Package' }}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy" decoding="async">
-                        @if(isset($pkg['price']) && !empty($pkg['price']))
-                        <div class="absolute top-4 right-4 bg-white/95 backdrop-blur px-3 py-1 text-xs font-semibold text-text-primary shadow-sm">
-                            {{ $pkg['price'] }}
+                        @if(isset($pkg['destination']))
+                        <div class="absolute top-4 left-4 bg-accent-primary text-white px-3 py-1 text-xs font-semibold uppercase tracking-wider">
+                            {{ $pkg['destination'] }}
+                        </div>
+                        @endif
+                        @if(isset($pkg['duration']) && $pkg['duration'])
+                        <div class="absolute bottom-4 right-4 bg-gray-950/80 backdrop-blur-xs text-white px-3 py-1 text-xs font-medium">
+                            {{ $pkg['duration'] }}
                         </div>
                         @endif
                     </div>
-
                     <div class="p-6">
-                        <div class="flex flex-wrap items-center gap-2 text-xs text-text-secondary mb-3">
-                            @if(isset($pkg['destination']))
-                            <span class="px-2 py-0.5 bg-gray-100 text-accent-primary font-medium uppercase tracking-wider">{{ $pkg['destination'] }}</span>
-                            @endif
-                            @if(isset($pkg['duration']))
-                            <span class="px-2 py-0.5 bg-gray-100 font-medium">{{ $pkg['duration'] }}</span>
-                            @endif
-                        </div>
-
                         @if(isset($pkg['name']))
                         <h3 class="font-display text-xl font-bold text-text-primary mb-2">
                             <a href="{{ url('/packages/' . ($pkg['slug'] ?? Str::slug($pkg['name']))) }}" class="hover:text-accent-primary transition-colors">
@@ -79,19 +85,16 @@
                             </a>
                         </h3>
                         @endif
-
                         @if(isset($pkg['description']))
-                        <p class="text-text-secondary text-sm leading-relaxed mb-4">{{ Str::limit(strip_tags($pkg['description']), 130) }}</p>
+                        <p class="text-text-secondary text-sm line-clamp-2 leading-relaxed">
+                            {{ strip_tags($pkg['description']) }}
+                        </p>
                         @endif
                     </div>
                 </div>
-
-                <div class="p-6 pt-0 border-t border-gray-50 flex gap-3">
-                    <a href="{{ url('/packages/' . ($pkg['slug'] ?? Str::slug($pkg['name'] ?? ''))) }}" class="btn-primary flex-1 text-center py-2.5 text-sm">
-                        View Details
-                    </a>
-                    <a href="{{ url('/enquiry?package_slug=' . ($pkg['slug'] ?? '')) }}" class="btn-secondary flex-1 text-center py-2.5 text-sm">
-                        Enquire Now
+                <div class="p-6 pt-0 border-t border-gray-50 flex items-center justify-between">
+                    <a href="{{ url('/packages/' . ($pkg['slug'] ?? Str::slug($pkg['name'] ?? ''))) }}" class="text-accent-primary text-sm font-semibold hover:underline inline-flex items-center gap-1">
+                        View Itinerary &rarr;
                     </a>
                 </div>
             </article>

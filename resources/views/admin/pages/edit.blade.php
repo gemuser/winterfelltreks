@@ -61,8 +61,9 @@
             @endphp
             @if(!empty($cleanRules))
                 @if(str_starts_with($targetKey, 'custom_'))
-                    {{-- Custom Canva Placed Element: target ONLY the exact element/wrapper, never its descendants --}}
-                    #section-view-{{ $sec->id }} [data-key="{{ $targetKey }}"]
+                    {{-- Custom Canva Placed Element: target ONLY the exact content element, never the outer draggable container or handle bar --}}
+                    #section-view-{{ $sec->id }} .canva-draggable-item > [data-key="{{ $targetKey }}"],
+                    #section-view-{{ $sec->id }} [data-key="{{ $targetKey }}"]:not(.canva-draggable-item):not(.canva-drag-handle-bar):not(.canva-handle)
                     {
                         @foreach($cleanRules as $p => $v)
                             {!! $p !!}: {!! $v !!} !important;
@@ -77,7 +78,7 @@
                     @endphp
 
                     @if(!empty($boxRules))
-                    #section-view-{{ $sec->id }} [data-key="{{ $targetKey }}"]
+                    #section-view-{{ $sec->id }} [data-key="{{ $targetKey }}"]:not(.canva-draggable-item):not(.canva-drag-handle-bar)
                     @if(in_array($targetKey, ['primary_cta', 'secondary_cta', 'view_all', 'button', 'cta']))
                         , #section-view-{{ $sec->id }} a[data-key="{{ $targetKey }}"], #section-view-{{ $sec->id }} a.btn-primary
                     @endif
@@ -89,14 +90,14 @@
                     @endif
 
                     @if(!empty($textRules))
-                    #section-view-{{ $sec->id }} [data-key="{{ $targetKey }}"],
-                    #section-view-{{ $sec->id }} [data-key="{{ $targetKey }}"] *
+                    #section-view-{{ $sec->id }} [data-key="{{ $targetKey }}"]:not(.canva-draggable-item):not(.canva-drag-handle-bar),
+                    #section-view-{{ $sec->id }} [data-key="{{ $targetKey }}"] *:not(.canva-drag-handle-bar):not(.canva-drag-handle-bar *):not(.canva-handle)
                     @if(in_array($targetKey, ['headline', 'heading', 'title']))
-                        , #section-view-{{ $sec->id }} h1, #section-view-{{ $sec->id }} h2, #section-view-{{ $sec->id }} h1 *, #section-view-{{ $sec->id }} h2 *
+                        , #section-view-{{ $sec->id }} .canva-rendered-content h1, #section-view-{{ $sec->id }} .canva-rendered-content h2, #section-view-{{ $sec->id }} .canva-rendered-content h1 *:not(.canva-drag-handle-bar *), #section-view-{{ $sec->id }} .canva-rendered-content h2 *:not(.canva-drag-handle-bar *)
                     @elseif(in_array($targetKey, ['subheadline', 'subheading', 'subtitle']))
-                        , #section-view-{{ $sec->id }} h3, #section-view-{{ $sec->id }} h4, #section-view-{{ $sec->id }} [data-key="subheadline"] *, #section-view-{{ $sec->id }} span.text-accent-primary
+                        , #section-view-{{ $sec->id }} .canva-rendered-content h3:not([data-key^="custom_"]), #section-view-{{ $sec->id }} .canva-rendered-content h4, #section-view-{{ $sec->id }} [data-key="subheadline"] *:not(.canva-drag-handle-bar *), #section-view-{{ $sec->id }} span.text-accent-primary
                     @elseif(in_array($targetKey, ['body', 'content', 'description']))
-                        , #section-view-{{ $sec->id }} .prose, #section-view-{{ $sec->id }} p, #section-view-{{ $sec->id }} .prose *, #section-view-{{ $sec->id }} p *
+                        , #section-view-{{ $sec->id }} .canva-rendered-content .prose, #section-view-{{ $sec->id }} .canva-rendered-content p:not([data-key^="custom_"]), #section-view-{{ $sec->id }} .canva-rendered-content .prose *, #section-view-{{ $sec->id }} .canva-rendered-content p *:not(.canva-drag-handle-bar *)
                     @elseif($targetKey === 'primary_cta')
                         , #section-view-{{ $sec->id }} a[data-key="primary_cta"], #section-view-{{ $sec->id }} a.btn-primary
                     @elseif($targetKey === 'secondary_cta')
@@ -1698,25 +1699,29 @@
                                     $transform = ($pos === 'absolute') ? 'translate(-50%, -50%)' : 'none';
                                     $width = $elStyles['width'] ?? null;
                                 @endphp
-                                <div class="canva-draggable-item group/custom select-none z-30 inline-block p-1.5 rounded-lg transition-shadow duration-150 relative cursor-move"
+                                <div class="canva-draggable-item group/custom z-30 inline-block p-1.5 rounded-lg transition-shadow duration-150 relative"
                                      :class="activeTextKey === '{{ $cEl->element_key }}' ? 'ring-2 ring-accent-primary ring-offset-2 ring-offset-black/50 shadow-2xl' : 'hover:ring-1 hover:ring-accent-primary/60'"
                                      data-key="{{ $cEl->element_key }}"
                                      data-element-id="{{ $cEl->id }}"
                                      data-section-id="{{ $sec->id }}"
-                                     @mousedown="startDraggingElement($event, {{ $sec->id }}, '{{ $cEl->element_key }}', {{ $cEl->id }})"
-                                     @dblclick.stop="if ('{{ $cEl->element_type }}' === 'image' || '{{ $cEl->element_key }}'.includes('photo')) { openImageModal({{ $sec->id }}, {{ $cEl->id }}); } else { startInlineEditing($event, {{ $sec->id }}, '{{ $cEl->element_key }}'); }"
+                                     @mousedown="if ($event.target.closest('.canva-drag-handle-bar') || $event.target === $el) startDraggingElement($event, {{ $sec->id }}, '{{ $cEl->element_key }}', {{ $cEl->id }})"
                                      style="position: {{ $pos }}; top: {{ $top }}; left: {{ $left }}; transform: {{ $transform }}; @if($width) width: {{ $width }}; max-width: 95vw; @else max-width: 90%; @endif">
 
-                                    {{-- Canva Drag Handle Bar (Top Center) --}}
-                                    <div class="canva-drag-handle-bar absolute -top-8 left-1/2 -translate-x-1/2 flex items-center gap-1.5 bg-gray-950 text-white text-3xs px-2.5 py-1 rounded-full shadow-xl border border-gray-700 z-50 cursor-grab active:cursor-grabbing select-none whitespace-nowrap opacity-0 group-hover/custom:opacity-100 transition-opacity before:content-[''] before:absolute before:inset-x-0 before:top-full before:h-3 before:bg-transparent"
-                                         :class="activeTextKey === '{{ $cEl->element_key }}' ? '!opacity-100' : ''"
+                                    {{-- Canva Drag Handle Bar (Top Center) - Ultra-Crisp, Non-Intrusive, No Click-Stealing Overlays --}}
+                                    <div class="canva-drag-handle-bar absolute left-1/2 -translate-x-1/2 flex items-center gap-1.5 bg-gray-950/95 text-white px-2.5 py-1 rounded-full shadow-2xl border border-gray-700/80 z-50 cursor-grab active:cursor-grabbing select-none whitespace-nowrap opacity-0 group-hover/custom:opacity-100 transition-opacity"
+                                         style="bottom: calc(100% + 6px);"
+                                         :class="activeTextKey === '{{ $cEl->element_key }}' ? '!opacity-100 ring-1 ring-accent-primary' : ''"
                                          @mousedown.stop="startDraggingElement($event, {{ $sec->id }}, '{{ $cEl->element_key }}', {{ $cEl->id }})">
-                                        <svg class="w-3.5 h-3.5 text-accent-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 8h16M4 16h16"></path></svg>
-                                        <span class="font-bold">Drag to Move</span>
-                                        <span class="text-gray-500">|</span>
-                                        <button type="button" @click.stop="duplicateCustomElement({{ $sec->id }}, {{ $cEl->id }})" class="hover:text-accent-primary px-1" title="Duplicate Layer">📋</button>
-                                        <span class="text-gray-500">|</span>
-                                        <button type="button" @click.stop="deleteCustomElement({{ $sec->id }}, {{ $cEl->id }})" class="hover:text-red-400 px-1 font-bold" title="Delete Element">✕</button>
+                                        <svg class="w-3.5 h-3.5 text-accent-primary shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 8h16M4 16h16"></path></svg>
+                                        <span class="canva-drag-label font-bold tracking-wide text-xs">Drag</span>
+                                        <span class="canva-drag-sep text-gray-500">|</span>
+                                        <button type="button" class="canva-drag-btn hover:text-accent-primary text-xs flex items-center gap-1" @mousedown.stop @click.stop="focusAndEditText('{{ $cEl->element_key }}', {{ $sec->id }}, {{ $cEl->id }})" title="Click to edit text directly">
+                                            <span>✏️</span><span>Edit</span>
+                                        </button>
+                                        <span class="canva-drag-sep text-gray-500">|</span>
+                                        <button type="button" class="canva-drag-btn hover:text-accent-primary text-xs" @mousedown.stop @click.stop="duplicateCustomElement({{ $sec->id }}, {{ $cEl->id }})" title="Duplicate Layer">📋</button>
+                                        <span class="canva-drag-sep text-gray-500">|</span>
+                                        <button type="button" class="canva-drag-btn hover:text-red-400 font-bold text-xs" @mousedown.stop @click.stop="deleteCustomElement({{ $sec->id }}, {{ $cEl->id }})" title="Delete Element">✕</button>
                                     </div>
 
                                     {{-- 8 Figma/Canva Resize Handles --}}
@@ -1733,29 +1738,63 @@
                                         </div>
                                     </template>
 
+                                    @php
+                                        $cContent = $cEl->getContent();
+                                        $cText = is_array($cContent) ? ($cContent['text'] ?? $cContent['title'] ?? reset($cContent)) : $cContent;
+                                        $cLinkUrl = $cEl->getLinkUrl() ?: (is_array($cContent) ? ($cContent['url'] ?? '#') : '#');
+                                        $cLinkText = $cEl->getLinkText() ?: (is_array($cContent) ? ($cContent['text'] ?? 'Explore More') : (is_string($cContent) ? $cContent : 'Explore More'));
+                                    @endphp
+
                                     @if($cEl->element_type === 'component' || str_contains($cEl->element_key, 'comp_') || str_contains($cEl->element_key, 'search') || str_contains($cEl->element_key, 'badge') || str_contains($cEl->element_key, 'card'))
                                         @include('components.canva_component', ['cEl' => $cEl, 'isEditor' => true])
                                     @elseif($cEl->element_type === 'image' || str_contains($cEl->element_key, 'photo') || str_contains($cEl->element_key, 'image'))
                                         @include('components.canva_photo_box', ['cEl' => $cEl, 'isEditor' => true, 'elStyles' => $elStyles])
                                     @elseif($cEl->element_type === 'link')
-                                        <a href="{{ $cEl->getLinkUrl() ?? '#' }}" @click.prevent data-key="{{ $cEl->element_key }}" class="canva-custom-button btn-primary py-2.5 px-6 font-semibold inline-block shadow-md pointer-events-auto">
-                                            {{ $cEl->getLinkText() ?? 'Explore More' }}
+                                        <a href="{{ $cLinkUrl }}" @click.prevent data-key="{{ $cEl->element_key }}" data-element-id="{{ $cEl->id }}" class="canva-custom-button btn-primary py-2.5 px-6 font-semibold inline-block shadow-md pointer-events-auto">
+                                            {{ $cLinkText }}
                                         </a>
                                     @elseif(str_contains($cEl->element_key, 'headline'))
-                                        <h3 data-key="{{ $cEl->element_key }}" class="canva-custom-text font-display font-bold text-3xl text-white drop-shadow-lg cursor-text pointer-events-auto">
-                                            {{ is_string($cEl->content) ? $cEl->content : ($cEl->content['text'] ?? '') }}
+                                        <h3 data-key="{{ $cEl->element_key }}" data-element-id="{{ $cEl->id }}"
+                                            contenteditable="true"
+                                            @click.stop="activateTextNode($event, {{ $sec->id }}, '{{ $cEl->element_key }}', {{ $cEl->id }})"
+                                            @focus="activateTextNode($event, {{ $sec->id }}, '{{ $cEl->element_key }}', {{ $cEl->id }})"
+                                            @blur="onDirectTextBlur($event, {{ $sec->id }}, {{ $cEl->id }})"
+                                            @keydown="onDirectTextKeydown($event)"
+                                            class="canva-custom-text font-display font-bold text-3xl cursor-text select-text pointer-events-auto"
+                                            style="color: {{ $elStyles['color'] ?? '#111827' }};">
+                                            {{ $cText }}
                                         </h3>
                                     @elseif(str_contains($cEl->element_key, 'subheading'))
-                                        <div data-key="{{ $cEl->element_key }}" class="canva-custom-text font-body text-xl font-medium text-gray-100 drop-shadow-md cursor-text pointer-events-auto">
-                                            {{ is_string($cEl->content) ? $cEl->content : ($cEl->content['text'] ?? '') }}
+                                        <div data-key="{{ $cEl->element_key }}" data-element-id="{{ $cEl->id }}"
+                                             contenteditable="true"
+                                             @click.stop="activateTextNode($event, {{ $sec->id }}, '{{ $cEl->element_key }}', {{ $cEl->id }})"
+                                             @focus="activateTextNode($event, {{ $sec->id }}, '{{ $cEl->element_key }}', {{ $cEl->id }})"
+                                             @blur="onDirectTextBlur($event, {{ $sec->id }}, {{ $cEl->id }})"
+                                             @keydown="onDirectTextKeydown($event)"
+                                             class="canva-custom-text font-body text-xl font-medium cursor-text select-text pointer-events-auto"
+                                             style="color: {{ $elStyles['color'] ?? '#374151' }};">
+                                             {{ $cText }}
                                         </div>
                                     @elseif(str_contains($cEl->element_key, 'body'))
-                                        <div data-key="{{ $cEl->element_key }}" class="canva-custom-text prose max-w-xl text-gray-200 drop-shadow cursor-text pointer-events-auto">
-                                            {!! is_string($cEl->content) ? $cEl->content : ($cEl->content['text'] ?? '') !!}
+                                        <div data-key="{{ $cEl->element_key }}" data-element-id="{{ $cEl->id }}"
+                                             contenteditable="true"
+                                             @click.stop="activateTextNode($event, {{ $sec->id }}, '{{ $cEl->element_key }}', {{ $cEl->id }})"
+                                             @focus="activateTextNode($event, {{ $sec->id }}, '{{ $cEl->element_key }}', {{ $cEl->id }})"
+                                             @blur="onDirectTextBlur($event, {{ $sec->id }}, {{ $cEl->id }})"
+                                             class="canva-custom-text prose max-w-xl cursor-text select-text pointer-events-auto"
+                                             style="color: {{ $elStyles['color'] ?? '#4b5563' }};">
+                                             {!! $cText !!}
                                         </div>
                                     @else
-                                        <div data-key="{{ $cEl->element_key }}" class="canva-custom-text font-body text-base text-white drop-shadow cursor-text pointer-events-auto">
-                                            {{ is_string($cEl->content) ? $cEl->content : ($cEl->content['text'] ?? '') }}
+                                        <div data-key="{{ $cEl->element_key }}" data-element-id="{{ $cEl->id }}"
+                                             contenteditable="true"
+                                             @click.stop="activateTextNode($event, {{ $sec->id }}, '{{ $cEl->element_key }}', {{ $cEl->id }})"
+                                             @focus="activateTextNode($event, {{ $sec->id }}, '{{ $cEl->element_key }}', {{ $cEl->id }})"
+                                             @blur="onDirectTextBlur($event, {{ $sec->id }}, {{ $cEl->id }})"
+                                             @keydown="onDirectTextKeydown($event)"
+                                             class="canva-custom-text font-body text-base cursor-text select-text pointer-events-auto"
+                                             style="color: {{ $elStyles['color'] ?? '#111827' }};">
+                                             {{ $cText }}
                                         </div>
                                     @endif
                                 </div>
@@ -2235,10 +2274,71 @@
 .handle-w  { left: -6px; top: calc(50% - 5px); cursor: ew-resize; }
 .handle-e  { right: -6px; top: calc(50% - 5px); cursor: ew-resize; }
 
+#canvas-inner .canva-draggable-item .canva-drag-handle-bar,
+#canvas-inner .canva-draggable-item .canva-drag-handle-bar *,
+.canva-drag-handle-bar,
+.canva-drag-handle-bar * {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    line-height: 1 !important;
+    text-transform: none !important;
+    letter-spacing: normal !important;
+    font-style: normal !important;
+    text-decoration: none !important;
+    box-sizing: border-box !important;
+    color: #ffffff !important;
+    text-shadow: none !important;
+}
+#canvas-inner .canva-draggable-item .canva-drag-handle-bar,
 .canva-drag-handle-bar {
-    pointer-events: auto;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-    backdrop-filter: blur(4px);
+    pointer-events: auto !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5) !important;
+    backdrop-filter: blur(8px) !important;
+    user-select: none !important;
+    box-sizing: border-box !important;
+    height: 26px !important;
+    min-height: 26px !important;
+    max-height: 26px !important;
+    padding: 0 10px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    border-radius: 9999px !important;
+    background: rgba(17, 24, 39, 0.96) !important;
+    border: 1px solid rgba(75, 85, 99, 0.8) !important;
+    width: auto !important;
+    max-width: none !important;
+}
+#canvas-inner .canva-draggable-item .canva-drag-handle-bar button,
+.canva-drag-handle-bar button {
+    background: transparent !important;
+    border: none !important;
+    cursor: pointer !important;
+    padding: 2px 4px !important;
+    margin: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 2px !important;
+    font-size: 11px !important;
+    color: #ffffff !important;
+    line-height: 1 !important;
+    height: auto !important;
+    box-shadow: none !important;
+}
+#canvas-inner .canva-draggable-item .canva-drag-handle-bar button:hover,
+.canva-drag-handle-bar button:hover {
+    color: #ea580c !important;
+}
+#canvas-inner .canva-draggable-item .canva-drag-handle-bar svg,
+.canva-drag-handle-bar svg {
+    width: 13px !important;
+    height: 13px !important;
+    min-width: 13px !important;
+    min-height: 13px !important;
+    display: inline-block !important;
+    vertical-align: middle !important;
+    flex-shrink: 0 !important;
 }
 /* Canva & Figma Selection Box and Typography editing styles */
 .canva-rendered-content h1, 
@@ -2985,12 +3085,22 @@ function canvaEditor() {
             let targets = [];
             const targetEl = this.activeButtonElement || this.activeTextElement;
             if (targetEl) {
-                targets.push(targetEl);
-                targetEl.querySelectorAll('*').forEach(c => targets.push(c));
+                const realTarget = targetEl.classList.contains('canva-draggable-item')
+                    ? (targetEl.querySelector('.canva-custom-text, a, button, h1, h2, h3, h4, p') || targetEl)
+                    : targetEl;
+                if (!realTarget.closest('.canva-drag-handle-bar')) {
+                    targets.push(realTarget);
+                    realTarget.querySelectorAll('*').forEach(c => {
+                        if (!c.closest('.canva-drag-handle-bar') && !c.closest('.canva-handle')) {
+                            targets.push(c);
+                        }
+                    });
+                }
             } else if (this.activeSectionId) {
                 const secContainer = document.getElementById('section-view-' + this.activeSectionId);
                 if (secContainer) {
-                    targets = Array.from(secContainer.querySelectorAll('h1, h2, h3, h4, h5, p, a, button, span.text-accent-primary, .canva-custom-text'));
+                    targets = Array.from(secContainer.querySelectorAll('h1, h2, h3, h4, h5, p, a, button, span.text-accent-primary, .canva-custom-text'))
+                        .filter(t => !t.closest('.canva-drag-handle-bar') && !t.closest('.canva-handle'));
                 }
             }
 
@@ -3216,18 +3326,44 @@ function canvaEditor() {
                 top: initialTop
             };
 
+            // Detect if this section has a dark or light background to pick a high-contrast text color
+            const secContainer = document.getElementById('section-view-' + sectionId);
+            const sectionEl = secContainer?.querySelector('section') || secContainer;
+            let isDarkSection = false;
+            if (sectionEl) {
+                const bgClass = sectionEl.className || '';
+                if (bgClass.includes('bg-gray-950') || bgClass.includes('bg-gray-900') || bgClass.includes('bg-black') || bgClass.includes('bg-slate-900')) {
+                    isDarkSection = true;
+                } else {
+                    const compBg = window.getComputedStyle(sectionEl).backgroundColor;
+                    if (compBg && compBg !== 'transparent' && compBg !== 'rgba(0, 0, 0, 0)') {
+                        const rgb = compBg.match(/\d+/g);
+                        if (rgb && rgb.length >= 3) {
+                            const alpha = rgb.length >= 4 ? parseFloat(rgb[3]) : 1;
+                            if (alpha > 0.1) {
+                                const lum = 0.299 * (+rgb[0]) + 0.587 * (+rgb[1]) + 0.114 * (+rgb[2]);
+                                if (lum < 128) isDarkSection = true;
+                            }
+                        }
+                    }
+                }
+            }
+            const defaultTextColor = isDarkSection ? '#ffffff' : '#111827';
+            const defaultSubtextColor = isDarkSection ? '#e5e7eb' : '#374151';
+            const defaultBodyColor = isDarkSection ? '#d1d5db' : '#4b5563';
+
             if (type === 'subheading') {
                 defaultContent = initialContent || 'New Subheading Description';
                 elType = 'text';
                 initialStyles.fontSize = '20px';
                 initialStyles.fontFamily = "'Outfit', sans-serif";
-                initialStyles.color = '#f3f4f6';
+                initialStyles.color = defaultSubtextColor;
             } else if (type === 'body') {
                 defaultContent = initialContent || 'Add your detailed expedition or page description here.';
                 elType = 'richtext';
                 initialStyles.fontSize = '16px';
                 initialStyles.fontFamily = "'Outfit', sans-serif";
-                initialStyles.color = '#e5e7eb';
+                initialStyles.color = defaultBodyColor;
             } else if (type === 'button') {
                 defaultContent = initialContent || JSON.stringify({ text: 'Explore More', url: '/expeditions', style: 'primary' });
                 elType = 'link';
@@ -3238,9 +3374,9 @@ function canvaEditor() {
                 initialStyles.fontFamily = "'Outfit', sans-serif";
                 initialStyles.fontWeight = 'bold';
             } else {
-                initialStyles.fontSize = '48px';
+                initialStyles.fontSize = '36px';
                 initialStyles.fontFamily = "'Cinzel', serif";
-                initialStyles.color = '#ffffff';
+                initialStyles.color = defaultTextColor;
                 initialStyles.fontWeight = 'bold';
             }
 
@@ -3560,6 +3696,23 @@ function canvaEditor() {
         startDraggingElement(event, sectionId, elementKey, elementId) {
             if (event.target.closest('.canva-handle')) return;
             if (event.target.closest('.canva-drag-handle-bar button')) return;
+
+            const isDragHandle = !!event.target.closest('.canva-drag-handle-bar');
+            const textEl = event.target.closest('.canva-custom-text, h1, h2, h3, h4, h5, h6, p');
+
+            // If user clicked directly on text and NOT on the drag handle bar:
+            // Activate inline text editing immediately without blocking native caret placement
+            if (textEl && !isDragHandle) {
+                this.activeSectionId = sectionId;
+                this.activeTextKey = elementKey;
+                this.activeCustomElementId = elementId;
+                this.activeTextElement = textEl;
+                const dragItem = document.querySelector(`.canva-draggable-item[data-key="${elementKey}"]`) || event.currentTarget.closest('.canva-draggable-item') || event.currentTarget;
+                if (dragItem) this.attachSelectionBox(dragItem, 'Placed Layer');
+                this.startInlineEditing(event, sectionId, elementKey, elementId);
+                return; // Do NOT preventDefault! Allow native click, caret placement & typing!
+            }
+
             if (event.target.isContentEditable) return;
             if (['SELECT', 'TEXTAREA'].includes(event.target.tagName) && !event.target.closest('.canva-draggable-item')) return;
 
@@ -3654,7 +3807,7 @@ function canvaEditor() {
                 const dx = e.clientX - startX;
                 const dy = e.clientY - startY;
 
-                if (!moved && Math.hypot(dx, dy) < 4) {
+                if (!moved && Math.hypot(dx, dy) < 3) {
                     return;
                 }
                 moved = true;
@@ -3662,8 +3815,9 @@ function canvaEditor() {
                 const deltaLeftPct = (dx / contentRect.width) * 100;
                 const deltaTopPct = (dy / contentRect.height) * 100;
 
-                const newLeft = Math.max(1, Math.min(99, Math.round(curLeftPct + deltaLeftPct)));
-                const newTop = Math.max(1, Math.min(99, Math.round(curTopPct + deltaTopPct)));
+                // Ultra smooth floating-point positioning (no 1% integer jumpiness!)
+                const newLeft = Math.max(0.5, Math.min(99.5, parseFloat((curLeftPct + deltaLeftPct).toFixed(2))));
+                const newTop = Math.max(0.5, Math.min(99.5, parseFloat((curTopPct + deltaTopPct).toFixed(2))));
 
                 dragItem.style.setProperty('position', 'absolute', 'important');
                 dragItem.style.setProperty('left', newLeft + '%', 'important');
@@ -3671,7 +3825,7 @@ function canvaEditor() {
                 dragItem.style.setProperty('transform', 'translate(-50%, -50%)', 'important');
                 dragItem.style.setProperty('z-index', '40', 'important');
 
-                this.dragCoordinates = { show: true, x: newLeft, y: newTop };
+                this.dragCoordinates = { show: true, x: Math.round(newLeft), y: Math.round(newTop) };
             };
 
             const onMouseUp = async (e) => {
@@ -3702,32 +3856,108 @@ function canvaEditor() {
             document.addEventListener('mouseup', onMouseUp);
         },
 
-        startInlineEditing(event, sectionId, elementKey) {
-            const dragItem = event.currentTarget.closest('.canva-draggable-item') || event.currentTarget;
-            const textEl = dragItem.querySelector('.canva-custom-text, a, button, h1, h2, h3, h4, p, span') || dragItem;
-            if (!textEl) return;
-            if (textEl.isContentEditable) return;
+        
+        activateTextNode(event, sectionId, elementKey, elementId) {
+            this.activeSectionId = sectionId;
+            this.activeTextKey = elementKey;
+            this.activeCustomElementId = elementId;
+            const textEl = event.currentTarget || event.target;
+            this.activeTextElement = textEl;
+            const dragItem = textEl.closest('.canva-draggable-item');
+            if (dragItem) this.attachSelectionBox(dragItem, 'Placed Layer');
+
+            // Sync top toolbar with typography
+            const computed = window.getComputedStyle(textEl);
+            this.currentFontSize = parseInt(computed.fontSize) || 24;
+            this.currentStyles.fontFamily = this.normalizeFontFamily(computed.fontFamily);
+            const fw = computed.fontWeight;
+            this.currentStyles.fontWeight = (fw === 'bold' || parseInt(fw) >= 600) ? 'bold' : 'normal';
+            this.currentStyles.fontStyle = computed.fontStyle === 'italic' ? 'italic' : 'normal';
+            this.currentStyles.textDecoration = (computed.textDecorationLine?.includes('underline') || computed.textDecoration?.includes('underline')) ? 'underline' : 'none';
+            this.currentStyles.color = this.rgbToHex(computed.color);
+        },
+
+        focusAndEditText(elementKey, sectionId, elementId) {
+            this.activeSectionId = sectionId;
+            this.activeTextKey = elementKey;
+            this.activeCustomElementId = elementId;
+            const item = document.querySelector(`.canva-draggable-item[data-key="${elementKey}"]`);
+            if (!item) return;
+            this.attachSelectionBox(item, 'Placed Layer');
+            const textEl = item.querySelector('.canva-custom-text, a, button, h1, h2, h3, h4, p') || item;
+            if (textEl) {
+                this.activeTextElement = textEl;
+                textEl.contentEditable = "true";
+                textEl.focus({ preventScroll: true });
+                try {
+                    const range = document.createRange();
+                    range.selectNodeContents(textEl);
+                    const sel = window.getSelection();
+                    sel.removeAllRanges();
+                    sel.addRange(range);
+                } catch (e) {}
+            }
+        },
+
+        async onDirectTextBlur(event, sectionId, elementId) {
+            const text = event.target.innerText.trim();
+            if (text.length > 0) {
+                await this.handleTextUpdated(sectionId, event.target, text, elementId);
+            }
+        },
+
+        onDirectTextKeydown(event) {
+            if (event.key === 'Escape') {
+                event.target.blur();
+            } else if (event.key === 'Enter' && !event.shiftKey && event.target.tagName !== 'P' && !event.target.classList.contains('prose')) {
+                event.preventDefault();
+                event.target.blur();
+            }
+        },
+
+        enableDirectTextEditing(event, sectionId, elementKey, elementId, selectAll = false) {
+            this.activeSectionId = sectionId;
+            this.activeTextKey = elementKey;
+            this.activeCustomElementId = elementId;
+            const textEl = event.currentTarget || event.target;
+            this.activeTextElement = textEl;
+            const dragItem = textEl.closest('.canva-draggable-item');
+            if (dragItem) this.attachSelectionBox(dragItem, 'Placed Layer');
+
+            // Synchronize toolbar with element font/color
+            const computed = window.getComputedStyle(textEl);
+            this.currentFontSize = parseInt(computed.fontSize) || 24;
+            this.currentStyles.fontFamily = this.normalizeFontFamily(computed.fontFamily);
+            this.currentStyles.color = this.rgbToHex(computed.color);
+
+            if (textEl.isContentEditable && textEl.getAttribute('contenteditable') === 'true') {
+                return;
+            }
 
             textEl.contentEditable = "true";
+            textEl.classList.add('outline-dashed', 'outline-2', 'outline-accent-primary', 'outline-offset-2', 'rounded');
             textEl.focus({ preventScroll: true });
 
-            try {
-                const range = document.createRange();
-                range.selectNodeContents(textEl);
-                const sel = window.getSelection();
-                sel.removeAllRanges();
-                sel.addRange(range);
-            } catch (err) {}
+            if (selectAll) {
+                try {
+                    const range = document.createRange();
+                    range.selectNodeContents(textEl);
+                    const sel = window.getSelection();
+                    sel.removeAllRanges();
+                    sel.addRange(range);
+                } catch (err) {}
+            }
 
             const originalText = textEl.innerText.trim();
             const onBlur = async () => {
                 textEl.contentEditable = "false";
+                textEl.classList.remove('outline-dashed', 'outline-2', 'outline-accent-primary', 'outline-offset-2', 'rounded');
                 textEl.removeEventListener('blur', onBlur);
                 textEl.removeEventListener('keydown', onKey);
 
                 const updatedText = textEl.innerText.trim();
                 if (updatedText !== originalText && updatedText.length > 0) {
-                    await this.handleTextUpdated(sectionId, textEl, updatedText);
+                    await this.handleTextUpdated(sectionId, textEl, updatedText, elementId);
                 }
             };
 
@@ -3735,7 +3965,71 @@ function canvaEditor() {
                 if (e.key === 'Escape') {
                     textEl.innerText = originalText;
                     textEl.blur();
-                } else if (e.key === 'Enter' && !e.shiftKey && textEl.tagName !== 'P') {
+                } else if (e.key === 'Enter' && !e.shiftKey && textEl.tagName !== 'P' && !textEl.classList.contains('prose')) {
+                    e.preventDefault();
+                    textEl.blur();
+                }
+            };
+
+            textEl.addEventListener('blur', onBlur);
+            textEl.addEventListener('keydown', onKey);
+        },
+
+        startInlineEditing(event, sectionId, elementKey, elementId = null) {
+            const dragItem = (event?.currentTarget?.closest?.('.canva-draggable-item')) || 
+                             document.querySelector(`.canva-draggable-item[data-key="${elementKey}"]`) || 
+                             event?.currentTarget;
+            if (!dragItem) return;
+
+            const textEl = (event?.target?.closest?.('.canva-custom-text, a, button, h1, h2, h3, h4, p, span')) ||
+                           dragItem.querySelector('.canva-custom-text, a, button, h1, h2, h3, h4, p, span') || 
+                           dragItem;
+            if (!textEl) return;
+
+            this.activeSectionId = sectionId;
+            this.activeTextKey = elementKey;
+            if (elementId) this.activeCustomElementId = elementId;
+            this.activeTextElement = textEl;
+            this.attachSelectionBox(dragItem, 'Placed Layer');
+
+            // If already editing, don't rebind listeners
+            if (textEl.isContentEditable && textEl.getAttribute('contenteditable') === 'true') {
+                return;
+            }
+
+            textEl.contentEditable = "true";
+            textEl.classList.add('outline-dashed', 'outline-2', 'outline-accent-primary', 'outline-offset-2', 'rounded');
+            textEl.focus({ preventScroll: true });
+
+            // If double click or triggered from button, select all text. If single click, retain click position.
+            if (event?.type === 'dblclick' || event?.target?.closest('.canva-drag-handle-bar')) {
+                try {
+                    const range = document.createRange();
+                    range.selectNodeContents(textEl);
+                    const sel = window.getSelection();
+                    sel.removeAllRanges();
+                    sel.addRange(range);
+                } catch (err) {}
+            }
+
+            const originalText = textEl.innerText.trim();
+            const onBlur = async () => {
+                textEl.contentEditable = "false";
+                textEl.classList.remove('outline-dashed', 'outline-2', 'outline-accent-primary', 'outline-offset-2', 'rounded');
+                textEl.removeEventListener('blur', onBlur);
+                textEl.removeEventListener('keydown', onKey);
+
+                const updatedText = textEl.innerText.trim();
+                if (updatedText !== originalText && updatedText.length > 0) {
+                    await this.handleTextUpdated(sectionId, textEl, updatedText, elementId);
+                }
+            };
+
+            const onKey = (e) => {
+                if (e.key === 'Escape') {
+                    textEl.innerText = originalText;
+                    textEl.blur();
+                } else if (e.key === 'Enter' && !e.shiftKey && textEl.tagName !== 'P' && !textEl.classList.contains('prose')) {
                     e.preventDefault();
                     textEl.blur();
                 }
@@ -4088,12 +4382,19 @@ function canvaEditor() {
                     this.activeTextElement = btn;
                     this.activeButtonText = btn.textContent.trim();
                     this.activeButtonUrl = btn.getAttribute('href') || '#';
+                    return;
                 } else {
                     this.isButtonSelected = false;
                     this.activeButtonElement = null;
-                    this.activeTextElement = placedDraggable.querySelector('.canva-custom-text') || placedDraggable;
+                    const textNode = placedDraggable.querySelector('.canva-custom-text') || placedDraggable;
+                    this.activeTextElement = textNode;
+
+                    // If user clicked directly on the text: enable inline editing immediately
+                    if (target.closest('.canva-custom-text') || target === textNode) {
+                        this.startInlineEditing(event, sectionId, dKey, dId);
+                    }
+                    return;
                 }
-                return;
             }
 
             // 2. If clicked an Image or image area:
@@ -4234,16 +4535,14 @@ function canvaEditor() {
                     actualText.addEventListener('keydown', onKey);
                 };
 
-                // Double click enables editing immediately
+                // Double click or direct click enables editing immediately
                 actualText.ondblclick = (e) => {
                     e.stopPropagation();
                     enableEditing();
                 };
 
-                // Second click on already active element enables editing
-                if (isAlreadySelected) {
-                    enableEditing();
-                }
+                // Single click enables editing immediately
+                enableEditing();
 
                 return;
             }
@@ -4266,39 +4565,48 @@ function canvaEditor() {
             }
         },
 
-        async handleTextUpdated(sectionId, domElem, newText) {
+        async handleTextUpdated(sectionId, domElem, newText, elementId = null) {
             const sec = this.sectionsData[sectionId];
-            if (!sec || !sec.elements) return;
+            const resolvedElId = elementId || domElem.dataset?.elementId || domElem.closest('[data-element-id]')?.dataset?.elementId;
+            const resolvedElKey = domElem.dataset?.key || domElem.closest('[data-key]')?.dataset?.key;
 
-            const tagName = domElem.tagName.toLowerCase();
             let matchedEl = null;
 
-            if (domElem.dataset?.elementId) {
-                matchedEl = sec.elements.find(e => e.id == domElem.dataset.elementId);
-            }
-
-            if (!matchedEl && domElem.dataset?.key) {
-                matchedEl = sec.elements.find(e => e.key === domElem.dataset.key);
-            }
-
-            if (!matchedEl) {
-                if (tagName.startsWith('h')) {
-                    matchedEl = sec.elements.find(e => ['headline', 'heading', 'title'].includes(e.key) || e.type === 'text');
-                } else if (tagName === 'span') {
-                    matchedEl = sec.elements.find(e => ['subheadline', 'subheading', 'subtitle'].includes(e.key) || e.type === 'text');
-                } else {
-                    matchedEl = sec.elements.find(e => ['body', 'subheadline', 'subheading', 'content', 'description'].includes(e.key) || e.type === 'richtext');
+            if (sec && sec.elements) {
+                if (resolvedElId) {
+                    matchedEl = sec.elements.find(e => e.id == resolvedElId);
                 }
-            }
-
-            if (!matchedEl) {
-                matchedEl = sec.elements.find(e => e.type === 'text' || e.type === 'richtext');
+                if (!matchedEl && resolvedElKey) {
+                    matchedEl = sec.elements.find(e => e.key === resolvedElKey);
+                }
+                if (!matchedEl) {
+                    const tagName = domElem.tagName.toLowerCase();
+                    if (tagName.startsWith('h')) {
+                        matchedEl = sec.elements.find(e => ['headline', 'heading', 'title'].includes(e.key) || e.type === 'text');
+                    } else if (tagName === 'span') {
+                        matchedEl = sec.elements.find(e => ['subheadline', 'subheading', 'subtitle'].includes(e.key) || e.type === 'text');
+                    } else {
+                        matchedEl = sec.elements.find(e => ['body', 'subheadline', 'subheading', 'content', 'description'].includes(e.key) || e.type === 'richtext');
+                    }
+                }
+                if (!matchedEl) {
+                    matchedEl = sec.elements.find(e => e.type === 'text' || e.type === 'richtext');
+                }
             }
 
             if (matchedEl) {
                 matchedEl.value = newText;
+                matchedEl.text = newText;
                 await this.persistElements(sectionId, {
                     [matchedEl.id]: newText
+                });
+            } else if (resolvedElId) {
+                await this.persistElements(sectionId, {
+                    [resolvedElId]: newText
+                });
+            } else if (resolvedElKey) {
+                await this.persistElements(sectionId, {
+                    [resolvedElKey]: newText
                 });
             }
         },

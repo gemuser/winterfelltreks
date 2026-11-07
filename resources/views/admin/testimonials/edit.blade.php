@@ -60,7 +60,7 @@
             </div>
 
             <div>
-                <x-admin.image-upload name="customer_photo" label="Client Avatar / Photo" :value="old('customer_photo', $testimonial->customer_photo)" />
+                <x-admin.image-upload name="customer_photo" label="Client Avatar / Photo" aspectRatio="1/1" :value="old('customer_photo', $testimonial->customer_photo)" />
             </div>
 
             <div>

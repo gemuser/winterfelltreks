@@ -1,14 +1,22 @@
 @php
-    $heading = $elements['heading']?->content ?? 'Pioneering Himalayan Mastery';
-    $subheading = $elements['subheading']?->content ?? 'Our Story & Philosophy';
-    $body = $elements['body']?->content ?? '<p>Founded on high alpine passes and built upon generations of Sherpa mountaineering knowledge, Winterfell Treks & Expedition curates extraordinary expeditions across Nepal. We believe that stepping onto the highest ridges on Earth should be a safe, ethical, and deeply personal journey.</p>';
-    $image = $elements['image']?->getImageUrl();
+    $headingEl = $elements['heading'] ?? $elements['headline'] ?? $elements['title'] ?? null;
+    $heading = $headingEl?->content ?? 'Pioneering Himalayan Mastery';
+    $subheadingEl = $elements['subheading'] ?? $elements['subheadline'] ?? $elements['subtitle'] ?? null;
+    $subheading = $subheadingEl?->content ?? 'Our Story & Philosophy';
+    $bodyEl = $elements['body'] ?? $elements['content'] ?? null;
+    $body = $bodyEl?->content ?? '<p>Founded on high alpine passes and built upon generations of Sherpa mountaineering knowledge, Winterfell Treks & Expedition curates extraordinary expeditions across Nepal. We believe that stepping onto the highest ridges on Earth should be a safe, ethical, and deeply personal journey.</p>';
+    $imageEl = $elements['image'] ?? null;
+    $image = $imageEl?->getImageUrl();
     if (!$image) {
         $image = '/images/about-story.jpg';
     }
-    $imageAlt = $elements['image']?->getImageAlt() ?? $heading;
-    $ctaElement = $elements['cta'] ?? null;
-    $cta = $ctaElement?->getLinkUrl() ? (is_array($ctaElement->getContent()) ? $ctaElement->getContent() : json_decode($ctaElement->content, true)) : null;
+    $imageAlt = $imageEl?->getImageAlt() ?? $heading;
+    
+    $ctaElement = $elements['cta'] ?? $elements['primary_cta'] ?? $elements['button'] ?? null;
+    $ctaData = $ctaElement ? (is_array($ctaElement->getContent()) ? $ctaElement->getContent() : (is_string($ctaElement->content) && str_starts_with(trim($ctaElement->content), '{') ? json_decode($ctaElement->content, true) : null)) : null;
+    $ctaText = $ctaData['text'] ?? ($ctaElement && is_string($ctaElement->content) && !str_starts_with(trim($ctaElement->content), '{') && !str_starts_with($ctaElement->content, 'http') && !str_starts_with($ctaElement->content, '/') ? $ctaElement->content : 'Discover More');
+    $ctaUrl = $ctaData['url'] ?? ($ctaElement?->getLinkUrl() ?? ($ctaElement && is_string($ctaElement->content) && (str_starts_with($ctaElement->content, 'http') || str_starts_with($ctaElement->content, '/')) ? $ctaElement->content : url('/about')));
+    
     $layout = $settings['layout'] ?? 'text-left-image-right';
     $reverse = $layout === 'text-right-image-left';
 @endphp
@@ -19,26 +27,26 @@
             {{-- Text Column --}}
             <div class="{{ $reverse ? 'lg:order-2' : 'lg:order-1' }}" data-gsap="fade-{{ $reverse ? 'left' : 'right' }}">
                 @if($subheading)
-                <span class="text-accent-primary font-semibold text-xs sm:text-sm tracking-widest uppercase block mb-3">
+                <span data-key="subheading" data-element-id="{{ $subheadingEl?->id ?? '' }}" class="text-accent-primary font-semibold text-xs sm:text-sm tracking-widest uppercase block mb-3">
                     {{ $subheading }}
                 </span>
                 @endif
 
                 @if($heading)
-                <h2 class="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-text-primary mb-6 tracking-tight leading-tight">
+                <h2 data-key="heading" data-element-id="{{ $headingEl?->id ?? '' }}" class="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-text-primary mb-6 tracking-tight leading-tight">
                     {{ $heading }}
                 </h2>
                 @endif
 
                 @if($body)
-                <div class="prose prose-lg max-w-none text-text-secondary leading-relaxed mb-8">
+                <div data-key="body" data-element-id="{{ $bodyEl?->id ?? '' }}" class="prose prose-lg max-w-none text-text-secondary leading-relaxed mb-8">
                     {!! $body !!}
                 </div>
                 @endif
 
-                @if($cta && isset($cta['url']))
-                <a href="{{ $cta['url'] }}" class="btn-primary inline-flex items-center gap-2 px-8 py-3.5 font-semibold shadow-md">
-                    {{ $cta['text'] ?? 'Discover More' }}
+                @if($ctaText && $ctaUrl)
+                <a href="{{ $ctaUrl }}" data-key="cta" @if($ctaElement) data-element-id="{{ $ctaElement->id }}" @endif class="btn-primary inline-flex items-center gap-2 px-8 py-3.5 font-semibold shadow-md">
+                    {{ $ctaText }}
                     <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
                     </svg>
@@ -49,12 +57,9 @@
             {{-- Image Column --}}
             <div class="{{ $reverse ? 'lg:order-1' : 'lg:order-2' }} relative" data-gsap="fade-{{ $reverse ? 'right' : 'left' }}">
                 <div class="aspect-[4/3] lg:aspect-[4/3] overflow-hidden shadow-xl border border-gray-100 relative group">
-                    <img src="{{ $image }}" alt="{{ $imageAlt }}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy" decoding="async">
+                    <img src="{{ $image }}" alt="{{ $imageAlt }}" data-key="image" data-element-id="{{ $imageEl?->id ?? '' }}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy" decoding="async">
                     <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
                 </div>
-                
-                {{-- Decorative accent block --}}
-                <div class="hidden sm:block absolute -bottom-4 -right-4 w-24 h-24 bg-accent-primary/10 -z-10" aria-hidden="true"></div>
             </div>
         </div>
     </div>

@@ -1,6 +1,8 @@
 @php
-    $heading = $elements['heading']?->content ?? 'Visit Our Office';
-    $address = $elements['address']?->content ?? ($globals['contact']['address'] ?? 'Thamel, Kathmandu, Nepal');
+    $heading = $elements['heading']?->content ?? $elements['headline']?->content ?? $elements['title']?->content ?? 'Visit Our Office';
+    $headingEl = $elements['heading'] ?? $elements['headline'] ?? $elements['title'] ?? null;
+    $address = $elements['address']?->content ?? $elements['body']?->content ?? ($globals['contact']['address'] ?? 'Thamel, Kathmandu, Nepal');
+    $addressEl = $elements['address'] ?? $elements['body'] ?? null;
     $embedUrl = $elements['embed_url']?->content ?? ($globals['contact']['map_url'] ?? 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3532.0!2d85.31!3d27.71!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sThamel!5e0!3m2!1sen!2snp!4v1');
 @endphp
 
@@ -9,12 +11,12 @@
         @if($heading || $address)
         <div class="text-center max-w-xl mx-auto mb-8" data-gsap="fade-up">
             @if($heading)
-            <h2 class="font-display text-2xl sm:text-3xl font-bold text-text-primary tracking-tight mb-2">
+            <h2 class="font-display text-2xl sm:text-3xl font-bold text-text-primary tracking-tight mb-2" data-key="heading" @if($headingEl) data-element-id="{{ $headingEl->id }}" @endif>
                 {{ $heading }}
             </h2>
             @endif
             @if($address)
-            <p class="text-text-secondary text-base">
+            <p class="text-text-secondary text-base" data-key="address" @if($addressEl) data-element-id="{{ $addressEl->id }}" @endif>
                 {{ $address }}
             </p>
             @endif

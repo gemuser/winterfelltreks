@@ -170,14 +170,31 @@ class SectionController extends Controller
                 : $section->elements()->where('element_key', $elementId)->first();
 
             if (!$element && !is_numeric($elementId)) {
-                $type = (str_contains($elementId, 'cta') || str_contains($elementId, 'button') || str_contains($elementId, 'link')) ? 'link' :
-                        ((str_contains($elementId, 'image') || str_contains($elementId, 'photo')) ? 'image' : 'text');
-                $element = $section->elements()->create([
-                    'element_key' => $elementId,
-                    'element_type' => $type,
-                    'content' => $content,
-                    'sort_order' => ($section->elements()->max('sort_order') ?? 0) + 1,
-                ]);
+                // Check if a synonym element exists in this section
+                $synonyms = match($elementId) {
+                    'headline', 'heading', 'title' => ['heading', 'headline', 'title', 'mission_title', 'vision_title'],
+                    'subheadline', 'subheading', 'subtitle' => ['subheading', 'subheadline', 'subtitle'],
+                    'body', 'content', 'description' => ['body', 'content', 'description', 'mission_text', 'vision_text'],
+                    'cta', 'primary_cta', 'button' => ['cta', 'primary_cta', 'button', 'cta_text'],
+                    'secondary_cta' => ['secondary_cta', 'email'],
+                    'email' => ['email', 'secondary_cta', 'contact_email'],
+                    'phone' => ['phone', 'primary_cta', 'contact_phone'],
+                    default => []
+                };
+                if (!empty($synonyms)) {
+                    $element = $section->elements()->whereIn('element_key', $synonyms)->first();
+                }
+
+                if (!$element) {
+                    $type = (str_contains($elementId, 'cta') || str_contains($elementId, 'button') || str_contains($elementId, 'link') || str_contains($elementId, 'email') || str_contains($elementId, 'phone')) ? 'link' :
+                            ((str_contains($elementId, 'image') || str_contains($elementId, 'photo')) ? 'image' : 'text');
+                    $element = $section->elements()->create([
+                        'element_key' => $elementId,
+                        'element_type' => $type,
+                        'content' => $content,
+                        'sort_order' => ($section->elements()->max('sort_order') ?? 0) + 1,
+                    ]);
+                }
             }
 
             if ($element) {
@@ -188,9 +205,30 @@ class SectionController extends Controller
                     if (json_last_error() === JSON_ERROR_NONE) {
                         $content = $decoded;
                     }
+                } elseif ($element->element_type === 'link' && is_string($content)) {
+                    // Preserve existing link URL if only text was edited directly
+                    $existing = $element->getContent();
+                    if (is_array($existing)) {
+                        $content = array_merge($existing, ['text' => $content]);
+                    } else {
+                        $content = ['text' => $content, 'url' => '#', 'style' => 'primary'];
+                    }
                 }
                 $element->content = $content;
                 $element->save();
+
+                // If this is a contact field or contains email/phone, synchronize with SiteSettings
+                $extractedText = is_array($content) ? ($content['text'] ?? $content['url'] ?? '') : (is_string($content) ? $content : '');
+                $cleanEmail = trim(str_replace('mailto:', '', $extractedText));
+                if (filter_var($cleanEmail, FILTER_VALIDATE_EMAIL)) {
+                    \App\Models\SiteSetting::setValue('email_primary', $cleanEmail, 'contact');
+                } elseif ($element->element_key === 'phone_emergency' || str_contains($element->element_key, 'emergency')) {
+                    \App\Models\SiteSetting::setValue('phone_emergency', trim($extractedText), 'contact');
+                } elseif (in_array($element->element_key, ['phone', 'contact_phone']) || ($section->section_type === 'contact_info' && preg_match('/^\+?[0-9\-\s\(\)]{7,}$/', trim($extractedText)))) {
+                    \App\Models\SiteSetting::setValue('phone_primary', trim($extractedText), 'contact');
+                } elseif (in_array($element->element_key, ['address', 'contact_address'])) {
+                    \App\Models\SiteSetting::setValue('office_address', trim($extractedText), 'contact');
+                }
             }
         }
 

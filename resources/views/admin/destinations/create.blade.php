@@ -59,7 +59,7 @@
             </div>
 
             <div>
-                <x-admin.image-upload name="featured_image" label="Featured Image" :value="old('featured_image')" />
+                <x-admin.image-upload name="featured_image" label="Featured Image" aspectRatio="16/9" :value="old('featured_image')" />
             </div>
 
             <div>
