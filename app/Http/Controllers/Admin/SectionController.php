@@ -159,7 +159,17 @@ class SectionController extends Controller
 
         // Delete element if requested
         if ($request->has('delete_element_id')) {
-            $section->elements()->where('id', $request->input('delete_element_id'))->delete();
+            $delEl = $section->elements()->where('id', $request->input('delete_element_id'))->first();
+            if ($delEl) {
+                $delKey = $delEl->element_key;
+                $delEl->delete();
+                $curSettings = is_array($section->settings) ? $section->settings : [];
+                if (!empty($curSettings['styles'][$delKey])) {
+                    unset($curSettings['styles'][$delKey]);
+                    $section->settings = $curSettings;
+                    $section->save();
+                }
+            }
         }
 
         // Update elements

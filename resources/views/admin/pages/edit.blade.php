@@ -61,9 +61,13 @@
             @endphp
             @if(!empty($cleanRules))
                 @if(str_starts_with($targetKey, 'custom_'))
-                    {{-- Custom Canva Placed Element: target ONLY the exact content element, never the outer draggable container or handle bar --}}
-                    #section-view-{{ $sec->id }} .canva-draggable-item > [data-key="{{ $targetKey }}"],
-                    #section-view-{{ $sec->id }} [data-key="{{ $targetKey }}"]:not(.canva-draggable-item):not(.canva-drag-handle-bar):not(.canva-handle)
+                    {{-- Custom Canva Placed Element: strictly target only this draggable item container and its inner content --}}
+                    #section-view-{{ $sec->id }} .canva-draggable-item[data-key="{{ $targetKey }}"],
+                    #section-view-{{ $sec->id }} .canva-draggable-item[data-key="{{ $targetKey }}"] > .canva-photo-box,
+                    #section-view-{{ $sec->id }} .canva-draggable-item[data-key="{{ $targetKey }}"] > .canva-photo-box img,
+                    #section-view-{{ $sec->id }} .canva-draggable-item[data-key="{{ $targetKey }}"] > .canva-custom-text,
+                    #section-view-{{ $sec->id }} .canva-draggable-item[data-key="{{ $targetKey }}"] > .canva-custom-button,
+                    #section-view-{{ $sec->id }} .canva-draggable-item[data-key="{{ $targetKey }}"] > .canva-component-box
                     {
                         @foreach($cleanRules as $p => $v)
                             {!! $p !!}: {!! $v !!} !important;
@@ -78,9 +82,9 @@
                     @endphp
 
                     @if(!empty($boxRules))
-                    #section-view-{{ $sec->id }} [data-key="{{ $targetKey }}"]:not(.canva-draggable-item):not(.canva-drag-handle-bar)
+                    #section-view-{{ $sec->id }} [data-key="{{ $targetKey }}"]:not(.canva-draggable-item):not(.canva-drag-handle-bar):not(.package-card *):not(.experience-card *):not(.article-card *):not([role="list"] *)
                     @if(in_array($targetKey, ['primary_cta', 'secondary_cta', 'view_all', 'button', 'cta']))
-                        , #section-view-{{ $sec->id }} a[data-key="{{ $targetKey }}"], #section-view-{{ $sec->id }} a.btn-primary
+                        , #section-view-{{ $sec->id }} a[data-key="{{ $targetKey }}"]:not(.package-card *):not(.experience-card *):not([role="list"] *), #section-view-{{ $sec->id }} a.btn-primary:not(.package-card *):not(.experience-card *):not([role="list"] *)
                     @endif
                     {
                         @foreach($boxRules as $p => $v)
@@ -90,18 +94,18 @@
                     @endif
 
                     @if(!empty($textRules))
-                    #section-view-{{ $sec->id }} [data-key="{{ $targetKey }}"]:not(.canva-draggable-item):not(.canva-drag-handle-bar),
-                    #section-view-{{ $sec->id }} [data-key="{{ $targetKey }}"] *:not(.canva-drag-handle-bar):not(.canva-drag-handle-bar *):not(.canva-handle)
+                    #section-view-{{ $sec->id }} [data-key="{{ $targetKey }}"]:not(.canva-draggable-item):not(.canva-drag-handle-bar):not(.package-card *):not(.experience-card *):not(.article-card *):not([role="list"] *),
+                    #section-view-{{ $sec->id }} [data-key="{{ $targetKey }}"] *:not(.canva-drag-handle-bar):not(.canva-drag-handle-bar *):not(.canva-handle):not(.package-card *):not(.experience-card *):not(.article-card *):not([role="list"] *)
                     @if(in_array($targetKey, ['headline', 'heading', 'title']))
-                        , #section-view-{{ $sec->id }} .canva-rendered-content h1, #section-view-{{ $sec->id }} .canva-rendered-content h2, #section-view-{{ $sec->id }} .canva-rendered-content h1 *:not(.canva-drag-handle-bar *), #section-view-{{ $sec->id }} .canva-rendered-content h2 *:not(.canva-drag-handle-bar *)
+                        , #section-view-{{ $sec->id }} .canva-rendered-content > div h1, #section-view-{{ $sec->id }} .canva-rendered-content > section > div h1, #section-view-{{ $sec->id }} .canva-rendered-content > div h2:not(.package-card *), #section-view-{{ $sec->id }} .canva-rendered-content > section > div h2:not(.package-card *)
                     @elseif(in_array($targetKey, ['subheadline', 'subheading', 'subtitle']))
-                        , #section-view-{{ $sec->id }} .canva-rendered-content h3:not([data-key^="custom_"]), #section-view-{{ $sec->id }} .canva-rendered-content h4, #section-view-{{ $sec->id }} [data-key="subheadline"] *:not(.canva-drag-handle-bar *), #section-view-{{ $sec->id }} span.text-accent-primary
+                        , #section-view-{{ $sec->id }} [data-key="subheadline"]:not(.package-card *):not([role="list"] *), #section-view-{{ $sec->id }} [data-key="subheading"]:not(.package-card *):not([role="list"] *), #section-view-{{ $sec->id }} span.text-accent-primary:not(.package-card *):not([role="list"] *)
                     @elseif(in_array($targetKey, ['body', 'content', 'description']))
-                        , #section-view-{{ $sec->id }} .canva-rendered-content .prose, #section-view-{{ $sec->id }} .canva-rendered-content p:not([data-key^="custom_"]), #section-view-{{ $sec->id }} .canva-rendered-content .prose *, #section-view-{{ $sec->id }} .canva-rendered-content p *:not(.canva-drag-handle-bar *)
+                        , #section-view-{{ $sec->id }} .canva-rendered-content > section > div > p:not([data-key^="custom_"]):not(.package-card *):not([role="list"] *), #section-view-{{ $sec->id }} .canva-rendered-content .prose:not(.package-card *):not([role="list"] *)
                     @elseif($targetKey === 'primary_cta')
-                        , #section-view-{{ $sec->id }} a[data-key="primary_cta"], #section-view-{{ $sec->id }} a.btn-primary
+                        , #section-view-{{ $sec->id }} a[data-key="primary_cta"]:not(.package-card *):not([role="list"] *), #section-view-{{ $sec->id }} a.btn-primary:not(.package-card *):not([role="list"] *)
                     @elseif($targetKey === 'secondary_cta')
-                        , #section-view-{{ $sec->id }} a[data-key="secondary_cta"], #section-view-{{ $sec->id }} a.btn-secondary
+                        , #section-view-{{ $sec->id }} a[data-key="secondary_cta"]:not(.package-card *):not([role="list"] *), #section-view-{{ $sec->id }} a.btn-secondary:not(.package-card *):not([role="list"] *)
                     @endif
                     {
                         @foreach($textRules as $p => $v)
@@ -337,7 +341,7 @@
                 <button type="button" @click="setDeviceView('desktop')" 
                         :class="deviceView === 'desktop' ? 'bg-accent-primary text-white shadow-xs font-bold' : 'text-gray-400 hover:text-white'"
                         class="px-2.5 py-1 rounded transition-all flex items-center gap-1.5"
-                        title="Desktop View (1280px)">
+                        title="Desktop View (1920×1080 Full HD)">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
                     <span class="hidden sm:inline">Desktop</span>
                 </button>
@@ -354,6 +358,27 @@
                         title="Mobile View (390px)">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
                     <span class="hidden sm:inline">Mobile</span>
+                </button>
+            </div>
+
+            {{-- 1920x1080 Fit Controls (Strictly Fits Screen - Zero Horizontal Scroll) --}}
+            <div x-show="deviceView === 'desktop'" class="flex items-center bg-gray-900 p-0.5 rounded-lg border border-gray-800 text-xs">
+                <div class="px-2 py-1 text-3xs font-extrabold text-accent-primary uppercase tracking-wider flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 rounded-full bg-accent-primary animate-pulse"></span>
+                    <span>1920×1080</span>
+                </div>
+                <div class="h-3 w-px bg-gray-700 mx-0.5"></div>
+                <button type="button" @click="setZoomMode('fit')" 
+                        :class="zoomMode === 'fit' ? 'bg-accent-primary text-white font-bold shadow-xs' : 'text-gray-400 hover:text-white'"
+                        class="px-2.5 py-1 rounded transition-all text-2xs font-semibold"
+                        :title="'Fit 1920px Canvas to Screen Width (' + Math.round(desktopZoom * 100) + '%)'">
+                    Fit Width (<span x-text="Math.round(desktopZoom * 100) + '%'"></span>)
+                </button>
+                <button type="button" @click="setZoomMode('fit-screen')" 
+                        :class="zoomMode === 'fit-screen' ? 'bg-accent-primary text-white font-bold shadow-xs' : 'text-gray-400 hover:text-white'"
+                        class="px-2.5 py-1 rounded transition-all text-2xs font-semibold"
+                        :title="'Fit entire 1920x1080 screen into window without scrolling (' + Math.round(desktopZoom * 100) + '%)'">
+                    Fit 16:9 Screen
                 </button>
             </div>
 
@@ -1514,7 +1539,7 @@
         </div>
 
         {{-- CANVA MAIN CANVAS WORKSPACE --}}
-        <div class="flex-1 bg-gray-200/90 overflow-y-auto overflow-x-hidden p-4 md:p-8 flex justify-center" id="canvas-scroll-container">
+        <div class="flex-1 bg-gray-200/90 overflow-y-auto overflow-x-hidden p-2 sm:p-4 flex flex-col items-center" id="canvas-scroll-container">
             <div class="bg-white shadow-2xl transition-all duration-300 min-h-full rounded-xl border border-gray-300 overflow-hidden overflow-x-hidden flex flex-col relative"
                  :style="getDeviceStyle()"
                  :class="{
@@ -1537,13 +1562,15 @@
                         <div class="w-2.5 h-2.5 rounded-full bg-amber-400"></div>
                         <div class="w-2.5 h-2.5 rounded-full bg-emerald-400"></div>
                     </div>
-                    <div class="bg-white border border-gray-200 rounded px-3 py-0.5 text-3xs font-mono text-gray-500">
-                        winterfelltreks.com/{{ $page->slug === 'home' ? '' : $page->slug }}
+                    <div class="bg-white border border-gray-200 rounded px-3 py-0.5 text-3xs font-mono text-gray-600 flex items-center gap-2">
+                        <span class="text-gray-400">🔒</span>
+                        <span>winterfelltreks.com/{{ $page->slug === 'home' ? '' : $page->slug }}</span>
+                        <span class="text-3xs text-accent-primary bg-accent-primary/10 px-1.5 py-0.2 rounded font-extrabold uppercase">1920 × 1080 FHD</span>
                     </div>
                     <div class="text-3xs font-semibold text-accent-primary items-center gap-1.5 bg-accent-primary/10 px-2.5 py-1 rounded-full hidden sm:flex canva-mode-badge"
                          x-show="deviceView === 'desktop'">
                         <span class="w-1.5 h-1.5 rounded-full bg-accent-primary animate-ping"></span>
-                        <span>Canva Mode: Click & Drag contents to edit and rearrange</span>
+                        <span>Canva Mode: 1920×1080 Full HD (Click & Drag to edit)</span>
                     </div>
                 </div>
 
@@ -2474,29 +2501,50 @@ html, body {
     max-width: calc(100vw - 2rem) !important;
 }
 
-/* Canvas inner wrapper must not bleed */
+/* Canvas inner wrapper for 1920x1080 Full HD Screen */
 #canvas-inner {
     overflow-x: hidden !important;
-    max-width: 100% !important;
     box-sizing: border-box !important;
+}
+
+#canvas-inner.device-desktop {
+    width: 1920px !important;
+    min-width: 1920px !important;
+    max-width: 1920px !important;
+    min-height: 1080px !important;
+}
+
+#canvas-inner.device-tablet {
+    width: 768px !important;
+    min-width: 768px !important;
+    max-width: 768px !important;
+    min-height: 1024px !important;
+}
+
+#canvas-inner.device-mobile {
+    width: 390px !important;
+    min-width: 390px !important;
+    max-width: 390px !important;
+    min-height: 844px !important;
 }
 
 /* Sections canvas wrapper */
 #sections-canvas-wrapper {
     overflow-x: hidden !important;
-    max-width: 100% !important;
+    width: 100% !important;
 }
 
-/* Prevent the category filter pills from causing horizontal scroll */
+/* Strictly fit screen - zero horizontal scrolling */
+#canvas-scroll-container {
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    width: 100% !important;
+}
+
 .no-scrollbar {
     overflow-x: auto !important;
     overflow-y: hidden !important;
     -webkit-overflow-scrolling: touch;
-}
-
-/* Prevent canvas scroll container from showing horizontal scrollbar */
-#canvas-scroll-container {
-    overflow-x: hidden !important;
 }
 
 /* Fix the floating sidebar toggle from causing layout shift */
@@ -2553,8 +2601,13 @@ html, body {
 
 <script>
 function canvaEditor() {
+    const isLg = window.innerWidth >= 1024;
+    const initialAvailW = window.innerWidth - (isLg ? 340 : 40);
+    const initialFit = Math.min(1.0, Math.max(0.25, (initialAvailW - 32) / 1920));
     return {
         deviceView: 'desktop',
+        zoomMode: 'fit',
+        desktopZoom: parseFloat(initialFit.toFixed(3)),
         showNavbar: localStorage.getItem('canva_show_navbar') !== 'false', // Navbar visibility toggle on edit canvas
         showSidebar: window.innerWidth >= 1024, // Sidebar visibility toggle (auto-hidden on mobile screens)
         sidebarWasOpenBeforeMobile: true, // Keeps track to restore sidebar when leaving mobile display
@@ -2759,6 +2812,8 @@ function canvaEditor() {
 
         init() {
             this.$nextTick(() => {
+                this.recalculateZoom();
+                window.addEventListener('resize', () => { if (this.zoomMode === 'fit') this.recalculateZoom(); });
                 this.tagRenderedElements();
 
                 // Prevent random scroll jumps: lock scroll during drag operations
@@ -2823,18 +2878,44 @@ function canvaEditor() {
                 const contentArea = secContainer.querySelector('.canva-rendered-content');
                 if (!contentArea) return;
 
+                // Helper: never tag elements inside repeated collections, card grids, forms, or placed draggable layers
+                const isCardOrExcluded = (node) => {
+                    return !!node.closest('.package-card, .experience-card, .article-card, .feature-card, .value-card, [role="list"] > *, [role="group"] > *, .canva-draggable-item, .canva-drag-handle-bar, .canva-handle, form');
+                };
+
                 sec.elements.forEach(el => {
+                    // NEVER match or tag template elements with custom placed layers!
+                    if (!el.key || el.key.startsWith('custom_')) return;
+
                     if (el.type === 'image') {
-                        const imgs = contentArea.querySelectorAll('img');
-                        imgs.forEach(img => {
-                            if (!img.dataset.elementId) {
-                                img.dataset.elementId = el.id;
-                                img.dataset.key = el.key;
-                                img.dataset.sectionId = sec.id;
+                        let targetUrl = '';
+                        if (typeof el.content === 'object' && el.content?.url) {
+                            targetUrl = el.content.url;
+                        } else if (typeof el.content === 'string') {
+                            try {
+                                const parsed = JSON.parse(el.content);
+                                targetUrl = parsed.url || el.content;
+                            } catch (e) {
+                                targetUrl = el.content;
                             }
-                        });
+                        }
+
+                        const imgs = Array.from(contentArea.querySelectorAll('img')).filter(img => !isCardOrExcluded(img));
+                        if (targetUrl) {
+                            imgs.forEach(img => {
+                                if (!img.dataset.elementId && (img.getAttribute('src') === targetUrl || targetUrl.includes(img.getAttribute('src')))) {
+                                    img.dataset.elementId = el.id;
+                                    img.dataset.key = el.key;
+                                    img.dataset.sectionId = sec.id;
+                                }
+                            });
+                        } else if (imgs.length === 1 && !imgs[0].dataset.elementId) {
+                            imgs[0].dataset.elementId = el.id;
+                            imgs[0].dataset.key = el.key;
+                            imgs[0].dataset.sectionId = sec.id;
+                        }
                     } else if (el.type === 'link') {
-                        const links = contentArea.querySelectorAll('a, button');
+                        const links = Array.from(contentArea.querySelectorAll('a, button')).filter(l => !isCardOrExcluded(l));
                         links.forEach(l => {
                             if (!l.dataset.elementId && ((el.text && l.textContent.includes(el.text)) || (el.url && l.getAttribute('href') === el.url))) {
                                 l.dataset.elementId = el.id;
@@ -2843,7 +2924,7 @@ function canvaEditor() {
                             }
                         });
                     } else if (el.type === 'text' || el.type === 'richtext') {
-                        const candidates = contentArea.querySelectorAll('h1, h2, h3, h4, h5, h6, p, span, div.prose, [class*="font-body"]');
+                        const candidates = Array.from(contentArea.querySelectorAll('h1, h2, h3, h4, h5, h6, p, span, div.prose, [class*="font-body"]')).filter(c => !isCardOrExcluded(c));
                         let matched = false;
                         candidates.forEach(c => {
                             if (!matched && !c.dataset.elementId && el.value && c.textContent.trim().length > 0 && c.textContent.trim().includes(el.value.trim().substring(0, 30))) {
@@ -2856,30 +2937,26 @@ function canvaEditor() {
                     }
                 });
 
-                // Tag any remaining buttons, headings, and paragraphs with clean fallbacks
-                contentArea.querySelectorAll('a, button').forEach((link, idx) => {
-                    if (!link.dataset.key) {
-                        link.dataset.key = (idx === 0) ? 'primary_cta' : 'secondary_cta';
-                        link.dataset.sectionId = sec.id;
-                    }
+                // Tag any remaining main header elements that are NOT inside cards or grids
+                const nonCardLinks = Array.from(contentArea.querySelectorAll('a, button')).filter(l => !isCardOrExcluded(l) && !l.dataset.key);
+                nonCardLinks.forEach((link, idx) => {
+                    link.dataset.key = (idx === 0) ? 'primary_cta' : 'secondary_cta';
+                    link.dataset.sectionId = sec.id;
                 });
-                contentArea.querySelectorAll('h1, h2').forEach(h => {
-                    if (!h.dataset.key) {
-                        h.dataset.key = 'headline';
-                        h.dataset.sectionId = sec.id;
-                    }
+                const nonCardHeadings = Array.from(contentArea.querySelectorAll('h1, h2')).filter(h => !isCardOrExcluded(h) && !h.dataset.key);
+                nonCardHeadings.forEach(h => {
+                    h.dataset.key = 'headline';
+                    h.dataset.sectionId = sec.id;
                 });
-                contentArea.querySelectorAll('h3, h4, span.text-accent-primary').forEach(s => {
-                    if (!s.dataset.key) {
-                        s.dataset.key = 'subheadline';
-                        s.dataset.sectionId = sec.id;
-                    }
+                const nonCardSubheadings = Array.from(contentArea.querySelectorAll('h3, h4, span.text-accent-primary')).filter(s => !isCardOrExcluded(s) && !s.dataset.key);
+                nonCardSubheadings.forEach(s => {
+                    s.dataset.key = 'subheadline';
+                    s.dataset.sectionId = sec.id;
                 });
-                contentArea.querySelectorAll('p, .prose').forEach(p => {
-                    if (!p.dataset.key) {
-                        p.dataset.key = 'body';
-                        p.dataset.sectionId = sec.id;
-                    }
+                const nonCardBodies = Array.from(contentArea.querySelectorAll('p, .prose')).filter(p => !isCardOrExcluded(p) && !p.dataset.key);
+                nonCardBodies.forEach(p => {
+                    p.dataset.key = 'body';
+                    p.dataset.sectionId = sec.id;
                 });
             });
         },
@@ -2893,6 +2970,7 @@ function canvaEditor() {
 
         toggleSidebar(val = null) {
             this.showSidebar = val !== null ? val : !this.showSidebar;
+            setTimeout(() => this.recalculateZoom(), 200);
             if (!this.showSidebar) {
                 this.leftTab = null;
             } else if (!this.leftTab) {
@@ -2903,6 +2981,7 @@ function canvaEditor() {
         setDeviceView(view) {
             const prev = this.deviceView;
             this.deviceView = view;
+            setTimeout(() => this.recalculateZoom(), 100);
             if (view === 'mobile') {
                 if (prev !== 'mobile') {
                     this.sidebarWasOpenBeforeMobile = this.showSidebar;
@@ -2920,9 +2999,44 @@ function canvaEditor() {
         },
 
         getDeviceStyle() {
-            if (this.deviceView === 'mobile') return 'width: 390px; max-width: 390px; min-height: 844px; margin: 1.5rem auto;';
-            if (this.deviceView === 'tablet') return 'width: 768px; max-width: 768px; min-height: 1024px; margin: 1.5rem auto;';
-            return 'width: 100%; max-width: 1280px; min-height: 100%; margin: 0 auto;';
+            if (this.deviceView === 'mobile') {
+                return 'width: 390px !important; min-width: 390px !important; max-width: 390px !important; min-height: 844px; margin: 1.5rem auto;';
+            }
+            if (this.deviceView === 'tablet') {
+                return 'width: 768px !important; min-width: 768px !important; max-width: 768px !important; min-height: 1024px; margin: 1.5rem auto;';
+            }
+            // Strict 1920x1080 Full HD Desktop
+            const zoomVal = this.desktopZoom || 1.0;
+            return `width: 1920px !important; min-width: 1920px !important; max-width: 1920px !important; min-height: 1080px; margin: 0 auto; zoom: ${zoomVal}; transform-origin: top center;`;
+        },
+
+        setZoomMode(mode) {
+            this.zoomMode = mode;
+            try {
+                localStorage.setItem('canva_zoom_mode', mode);
+            } catch (e) {}
+            this.recalculateZoom();
+        },
+
+        recalculateZoom() {
+            if (this.deviceView !== 'desktop') {
+                this.desktopZoom = 1.0;
+                return;
+            }
+            const container = document.getElementById('canvas-scroll-container');
+            const availW = container ? container.clientWidth : (window.innerWidth - (this.showSidebar ? 340 : 40));
+            const availH = container ? container.clientHeight : (window.innerHeight - 100);
+
+            if (this.zoomMode === 'fit-screen') {
+                const scaleW = (availW - 32) / 1920;
+                const scaleH = (availH - 40) / 1080;
+                this.desktopZoom = parseFloat(Math.min(scaleW, scaleH, 1.0).toFixed(3));
+            } else {
+                // 'fit' (Fit Width): Scales 1920px canvas to fit container width cleanly with NO horizontal scroll
+                const pad = window.innerWidth < 768 ? 16 : 32;
+                const targetW = Math.max(300, availW - pad);
+                this.desktopZoom = parseFloat(Math.min(1.0, targetW / 1920).toFixed(3));
+            }
         },
 
         setActiveSection(id) {
@@ -3061,14 +3175,16 @@ function canvaEditor() {
 
             let selector = '';
             const targetEl = this.activeButtonElement || this.activeTextElement;
-            if (targetEl) {
+            if (this.activeTextKey && this.activeTextKey.startsWith('custom_') && this.activeSectionId) {
+                selector = `#section-view-${this.activeSectionId} .canva-draggable-item[data-key="${this.activeTextKey}"], #section-view-${this.activeSectionId} .canva-draggable-item[data-key="${this.activeTextKey}"] *`;
+            } else if (targetEl) {
                 if (!targetEl.dataset.canvaUid) {
                     targetEl.dataset.canvaUid = 'canva-uid-' + Date.now() + '-' + Math.floor(Math.random()*1000);
                 }
                 const uid = targetEl.dataset.canvaUid;
                 selector = `[data-canva-uid="${uid}"], [data-canva-uid="${uid}"] *`;
             } else if (this.activeSectionId) {
-                selector = `#section-view-${this.activeSectionId} h1, #section-view-${this.activeSectionId} h2, #section-view-${this.activeSectionId} h3, #section-view-${this.activeSectionId} h4, #section-view-${this.activeSectionId} p, #section-view-${this.activeSectionId} a, #section-view-${this.activeSectionId} button, #section-view-${this.activeSectionId} span.text-accent-primary, #section-view-${this.activeSectionId} .canva-custom-text`;
+                selector = `#section-view-${this.activeSectionId} .canva-rendered-content > div h1, #section-view-${this.activeSectionId} .canva-rendered-content > section > div h1, #section-view-${this.activeSectionId} .canva-rendered-content > div h2, #section-view-${this.activeSectionId} .canva-rendered-content > section > div h2, #section-view-${this.activeSectionId} .canva-rendered-content > div p, #section-view-${this.activeSectionId} .canva-custom-text`;
             }
 
             if (selector) {
@@ -3083,12 +3199,10 @@ function canvaEditor() {
             const kebab = property.replace(/([A-Z])/g, '-$1').toLowerCase();
 
             let targets = [];
-            const targetEl = this.activeButtonElement || this.activeTextElement;
-            if (targetEl) {
-                const realTarget = targetEl.classList.contains('canva-draggable-item')
-                    ? (targetEl.querySelector('.canva-custom-text, a, button, h1, h2, h3, h4, p') || targetEl)
-                    : targetEl;
-                if (!realTarget.closest('.canva-drag-handle-bar')) {
+            if (this.activeTextKey && this.activeTextKey.startsWith('custom_')) {
+                const dragItem = document.querySelector(`.canva-draggable-item[data-key="${this.activeTextKey}"]`);
+                if (dragItem) {
+                    const realTarget = dragItem.querySelector('.canva-custom-text, a, button, h1, h2, h3, h4, p') || dragItem;
                     targets.push(realTarget);
                     realTarget.querySelectorAll('*').forEach(c => {
                         if (!c.closest('.canva-drag-handle-bar') && !c.closest('.canva-handle')) {
@@ -3096,11 +3210,26 @@ function canvaEditor() {
                         }
                     });
                 }
-            } else if (this.activeSectionId) {
-                const secContainer = document.getElementById('section-view-' + this.activeSectionId);
-                if (secContainer) {
-                    targets = Array.from(secContainer.querySelectorAll('h1, h2, h3, h4, h5, p, a, button, span.text-accent-primary, .canva-custom-text'))
-                        .filter(t => !t.closest('.canva-drag-handle-bar') && !t.closest('.canva-handle'));
+            } else {
+                const targetEl = this.activeButtonElement || this.activeTextElement;
+                if (targetEl) {
+                    const realTarget = targetEl.classList.contains('canva-draggable-item')
+                        ? (targetEl.querySelector('.canva-custom-text, a, button, h1, h2, h3, h4, p') || targetEl)
+                        : targetEl;
+                    if (!realTarget.closest('.canva-drag-handle-bar')) {
+                        targets.push(realTarget);
+                        realTarget.querySelectorAll('*').forEach(c => {
+                            if (!c.closest('.canva-drag-handle-bar') && !c.closest('.canva-handle')) {
+                                targets.push(c);
+                            }
+                        });
+                    }
+                } else if (this.activeSectionId) {
+                    const secContainer = document.getElementById('section-view-' + this.activeSectionId);
+                    if (secContainer) {
+                        targets = Array.from(secContainer.querySelectorAll('h1, h2, h3, h4, h5, p, a, button, span.text-accent-primary, .canva-custom-text'))
+                            .filter(t => !t.closest('.canva-drag-handle-bar') && !t.closest('.canva-handle') && !t.closest('.package-card, .experience-card, .article-card, .feature-card, .value-card, [role="list"], [role="group"]'));
+                    }
                 }
             }
 
@@ -3627,6 +3756,20 @@ function canvaEditor() {
                     item.style[property] = value;
                 }
             }
+
+            // Live runtime override strictly scoped to this custom element only
+            const kebab = property.replace(/([A-Z])/g, '-$1').toLowerCase();
+            let styleTag = document.getElementById('canva-live-overrides');
+            if (!styleTag) {
+                styleTag = document.createElement('style');
+                styleTag.id = 'canva-live-overrides';
+                document.head.appendChild(styleTag);
+            }
+            const secId = this.activeSectionId;
+            const key = this.activeTextKey;
+            const liveRule = `#section-view-${secId} .canva-draggable-item[data-key="${key}"], #section-view-${secId} .canva-draggable-item[data-key="${key}"] .canva-photo-box, #section-view-${secId} .canva-draggable-item[data-key="${key}"] img { ${kebab}: ${value} !important; }\n`;
+            styleTag.appendChild(document.createTextNode(liveRule));
+
             await this.persistElements(this.activeSectionId, {}, {
                 settings: {
                     styles: {

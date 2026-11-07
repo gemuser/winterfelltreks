@@ -32,6 +32,8 @@
 @endphp
 
 <div class="canva-photo-box relative overflow-hidden group/photo transition-all select-none w-full h-full pointer-events-auto {{ $isEditor ? 'cursor-move' : '' }}"
+     data-key="{{ $cEl->element_key }}"
+     data-element-id="{{ $cEl->id }}"
      style="border-radius: {{ $radius }}; box-shadow: {{ $shadow }}; border: {{ $border }};"
      @if($isEditor) @dblclick.stop="openImageModal({{ $cEl->section_id }}, {{ $cEl->id }})" title="Double click to change image" @endif>
     

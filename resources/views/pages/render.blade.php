@@ -21,11 +21,13 @@
                 @endphp
                 @if(!empty($cleanRules))
                     @if(str_starts_with($targetKey, 'custom_'))
-                        {{-- Custom Canva Placed Element: target ONLY the exact element/wrapper, never its descendants --}}
-                        [data-section-id="{{ $secId }}"] [data-key="{{ $targetKey }}"],
-                        #section-{{ $secId }}-wrapper [data-key="{{ $targetKey }}"],
-                        #section-{{ $secId }} [data-key="{{ $targetKey }}"],
-                        #{{ $anchor }} [data-key="{{ $targetKey }}"]
+                        {{-- Custom Canva Placed Element: strictly target only this placed layer and its inner content --}}
+                        [data-section-id="{{ $secId }}"] .canva-placed-element[data-key="{{ $targetKey }}"],
+                        [data-section-id="{{ $secId }}"] .canva-placed-element[data-key="{{ $targetKey }}"] > .canva-photo-box,
+                        [data-section-id="{{ $secId }}"] .canva-placed-element[data-key="{{ $targetKey }}"] > .canva-photo-box img,
+                        [data-section-id="{{ $secId }}"] .canva-placed-element[data-key="{{ $targetKey }}"] > .canva-custom-text,
+                        [data-section-id="{{ $secId }}"] .canva-placed-element[data-key="{{ $targetKey }}"] > .canva-custom-button,
+                        [data-section-id="{{ $secId }}"] .canva-placed-element[data-key="{{ $targetKey }}"] > .canva-component-box
                         {
                             @foreach($cleanRules as $p => $v)
                                 {!! $p !!}: {!! $v !!} !important;
@@ -40,11 +42,11 @@
                         @endphp
 
                         @if(!empty($boxRules))
-                        #section-{{ $secId }}-wrapper [data-key="{{ $targetKey }}"],
-                        #section-{{ $secId }} [data-key="{{ $targetKey }}"],
-                        #{{ $anchor }} [data-key="{{ $targetKey }}"]
+                        #section-{{ $secId }}-wrapper [data-key="{{ $targetKey }}"]:not(.canva-placed-element):not(.package-card *):not(.experience-card *):not([role="list"] *),
+                        #section-{{ $secId }} [data-key="{{ $targetKey }}"]:not(.canva-placed-element):not(.package-card *):not(.experience-card *):not([role="list"] *),
+                        #{{ $anchor }} [data-key="{{ $targetKey }}"]:not(.canva-placed-element):not(.package-card *):not(.experience-card *):not([role="list"] *)
                         @if(in_array($targetKey, ['primary_cta', 'secondary_cta', 'view_all', 'button', 'cta']))
-                            , #{{ $anchor }} a[data-key="{{ $targetKey }}"], #section-{{ $secId }} a[data-key="{{ $targetKey }}"], [data-section-id="{{ $secId }}"] a.btn-primary
+                            , #{{ $anchor }} a[data-key="{{ $targetKey }}"]:not(.package-card *):not([role="list"] *), #section-{{ $secId }} a[data-key="{{ $targetKey }}"]:not(.package-card *):not([role="list"] *), [data-section-id="{{ $secId }}"] a.btn-primary:not(.package-card *):not([role="list"] *)
                         @endif
                         {
                             @foreach($boxRules as $p => $v)
@@ -54,22 +56,19 @@
                         @endif
 
                         @if(!empty($textRules))
-                        #section-{{ $secId }}-wrapper [data-key="{{ $targetKey }}"],
-                        #section-{{ $secId }}-wrapper [data-key="{{ $targetKey }}"] *,
-                        #section-{{ $secId }} [data-key="{{ $targetKey }}"],
-                        #section-{{ $secId }} [data-key="{{ $targetKey }}"] *,
-                        #{{ $anchor }} [data-key="{{ $targetKey }}"],
-                        #{{ $anchor }} [data-key="{{ $targetKey }}"] *
+                        #section-{{ $secId }}-wrapper [data-key="{{ $targetKey }}"]:not(.canva-placed-element):not(.package-card *):not(.experience-card *):not([role="list"] *),
+                        #section-{{ $secId }} [data-key="{{ $targetKey }}"]:not(.canva-placed-element):not(.package-card *):not(.experience-card *):not([role="list"] *),
+                        #{{ $anchor }} [data-key="{{ $targetKey }}"]:not(.canva-placed-element):not(.package-card *):not(.experience-card *):not([role="list"] *)
                         @if(in_array($targetKey, ['headline', 'heading', 'title']))
-                            , #{{ $anchor }} h1, #{{ $anchor }} h2, #{{ $anchor }} h1 *, #{{ $anchor }} h2 *, #section-{{ $secId }} h1, #section-{{ $secId }} h2, #section-{{ $secId }} h1 *, #section-{{ $secId }} h2 *
+                            , #{{ $anchor }} > div h1, #{{ $anchor }} > div h2:not(.package-card *), #section-{{ $secId }} > div h1, #section-{{ $secId }} > div h2:not(.package-card *)
                         @elseif(in_array($targetKey, ['subheadline', 'subheading', 'subtitle']))
-                            , #{{ $anchor }} h3, #{{ $anchor }} h4, #{{ $anchor }} [data-key="subheadline"] *, #section-{{ $secId }} h3, #section-{{ $secId }} h4, #section-{{ $secId }} [data-key="subheadline"] *
+                            , #{{ $anchor }} [data-key="subheadline"]:not(.package-card *):not([role="list"] *), #{{ $anchor }} [data-key="subheading"]:not(.package-card *):not([role="list"] *), #section-{{ $secId }} [data-key="subheadline"]:not(.package-card *):not([role="list"] *), #section-{{ $secId }} [data-key="subheading"]:not(.package-card *):not([role="list"] *)
                         @elseif(in_array($targetKey, ['body', 'content', 'description']))
-                            , #{{ $anchor }} .prose, #{{ $anchor }} p, #{{ $anchor }} .prose *, #{{ $anchor }} p *, #section-{{ $secId }} .prose, #section-{{ $secId }} p, #section-{{ $secId }} .prose *, #section-{{ $secId }} p *
+                            , #{{ $anchor }} > div > p:not([data-key^="custom_"]):not(.package-card *):not([role="list"] *), #section-{{ $secId }} > div > p:not([data-key^="custom_"]):not(.package-card *):not([role="list"] *)
                         @elseif($targetKey === 'primary_cta')
-                            , #{{ $anchor }} a[data-key="primary_cta"], #section-{{ $secId }} a[data-key="primary_cta"], [data-section-id="{{ $secId }}"] a.btn-primary
+                            , #{{ $anchor }} a[data-key="primary_cta"]:not(.package-card *):not([role="list"] *), #section-{{ $secId }} a[data-key="primary_cta"]:not(.package-card *):not([role="list"] *), [data-section-id="{{ $secId }}"] a.btn-primary:not(.package-card *):not([role="list"] *)
                         @elseif($targetKey === 'secondary_cta')
-                            , #{{ $anchor }} a[data-key="secondary_cta"], #section-{{ $secId }} a[data-key="secondary_cta"], [data-section-id="{{ $secId }}"] a.btn-secondary
+                            , #{{ $anchor }} a[data-key="secondary_cta"]:not(.package-card *):not([role="list"] *), #section-{{ $secId }} a[data-key="secondary_cta"]:not(.package-card *):not([role="list"] *), [data-section-id="{{ $secId }}"] a.btn-secondary:not(.package-card *):not([role="list"] *)
                         @endif
                         {
                             @foreach($textRules as $p => $v)
