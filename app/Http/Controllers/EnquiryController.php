@@ -7,8 +7,11 @@ use App\Models\Destination;
 use App\Models\Expedition;
 use App\Models\Experience;
 use App\Models\SiteSetting;
+use App\Mail\NewEnquiryCustomerConfirmation;
+use App\Mail\NewEnquiryCompanyNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
@@ -117,36 +120,35 @@ class EnquiryController extends Controller
 
     private function sendNotifications(Enquiry $enquiry): void
     {
-        // Company notification
-        $notificationEmail = SiteSetting::getValue('enquiry_notification_email');
-        
-        if ($notificationEmail) {
-            // In production, use Mail::to($notificationEmail)->send(new NewEnquiryNotification($enquiry));
-            // For now, we'll log it
-            \Log::info('New enquiry notification would be sent to: ' . $notificationEmail, [
-                'reference' => $enquiry->reference_number,
-                'type' => $enquiry->enquiry_type,
-                'name' => $enquiry->full_name,
-                'email' => $enquiry->email,
-            ]);
+        // 1. Send confirmation email to customer (to the email inserted by the user)
+        if (!empty($enquiry->email)) {
+            try {
+                Mail::to($enquiry->email)->send(new NewEnquiryCustomerConfirmation($enquiry));
+                Log::info("Enquiry confirmation email sent to user: {$enquiry->email} for [{$enquiry->reference_number}]");
+            } catch (\Throwable $e) {
+                Log::error("Failed to send customer confirmation email to {$enquiry->email}: " . $e->getMessage(), [
+                    'reference' => $enquiry->reference_number,
+                    'error' => $e->getMessage(),
+                ]);
+            }
         }
 
-        // Auto-reply to customer
-        if (SiteSetting::getValue('enquiry_auto_reply_enabled', true)) {
-            $subject = SiteSetting::getValue('enquiry_auto_reply_subject', 'We received your enquiry');
-            $body = SiteSetting::getValue('enquiry_auto_reply_body', 'Thank you for your enquiry.');
-            
-            $body = str_replace(
-                ['{reference_number}', '{full_name}'],
-                [$enquiry->reference_number, $enquiry->full_name],
-                $body
-            );
+        // 2. Send notification email to company
+        $companyEmail = SiteSetting::getValue('enquiry_notification_email')
+            ?: SiteSetting::getValue('email_primary')
+            ?: SiteSetting::getValue('email_enquiries')
+            ?: config('mail.from.address');
 
-            // In production: Mail::to($enquiry->email)->send(new EnquiryAutoReply($subject, $body));
-            \Log::info('Auto-reply would be sent to: ' . $enquiry->email, [
-                'subject' => $subject,
-                'body' => $body,
-            ]);
+        if (!empty($companyEmail)) {
+            try {
+                Mail::to($companyEmail)->send(new NewEnquiryCompanyNotification($enquiry));
+                Log::info("New enquiry notification email sent to company: {$companyEmail} for [{$enquiry->reference_number}]");
+            } catch (\Throwable $e) {
+                Log::error("Failed to send company notification email to {$companyEmail}: " . $e->getMessage(), [
+                    'reference' => $enquiry->reference_number,
+                    'error' => $e->getMessage(),
+                ]);
+            }
         }
     }
 }

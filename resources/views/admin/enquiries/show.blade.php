@@ -28,14 +28,19 @@
                         default => 'bg-gray-50 text-gray-700',
                     };
                 @endphp
-                <select onchange="updateStatus('{{ $enquiry->id }}', this.value)" class="form-input w-full text-center font-medium {{ $statusClass }}">
-                    <option value="new" {{ $enquiry->status == 'new' ? 'selected' : '' }}>New</option>
-                    <option value="under_review" {{ $enquiry->status == 'under_review' ? 'selected' : '' }}>Under Review</option>
-                    <option value="contacted" {{ $enquiry->status == 'contacted' ? 'selected' : '' }}>Contacted</option>
-                    <option value="quotation_sent" {{ $enquiry->status == 'quotation_sent' ? 'selected' : '' }}>Quotation Sent</option>
-                    <option value="follow_up_required" {{ $enquiry->status == 'follow_up_required' ? 'selected' : '' }}>Follow-up Required</option>
-                    <option value="closed" {{ $enquiry->status == 'closed' ? 'selected' : '' }}>Closed</option>
-                </select>
+                <div class="relative">
+                    <select id="top-status-select" onchange="syncAndSaveStatus(this.value)" class="form-input w-full text-center font-bold text-sm rounded-lg cursor-pointer transition-opacity {{ $statusClass }}">
+                        <option value="new" {{ $enquiry->status == 'new' ? 'selected' : '' }}>New</option>
+                        <option value="under_review" {{ $enquiry->status == 'under_review' ? 'selected' : '' }}>Under Review</option>
+                        <option value="contacted" {{ $enquiry->status == 'contacted' ? 'selected' : '' }}>Contacted</option>
+                        <option value="quotation_sent" {{ $enquiry->status == 'quotation_sent' ? 'selected' : '' }}>Quotation Sent</option>
+                        <option value="follow_up_required" {{ $enquiry->status == 'follow_up_required' ? 'selected' : '' }}>Follow-up Required</option>
+                        <option value="closed" {{ $enquiry->status == 'closed' ? 'selected' : '' }}>Closed</option>
+                    </select>
+                    <div id="status-saving-hint" class="hidden text-3xs text-accent-primary font-bold mt-1 text-center">
+                        Updating status & sending email...
+                    </div>
+                </div>
             </div>
             
             <div>
@@ -206,7 +211,7 @@
                 
                 <div>
                     <label for="status" class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                    <select id="status" name="status" class="form-input w-full">
+                    <select id="status" name="status" onchange="const t = document.getElementById('top-status-select'); if (t) t.value = this.value;" class="form-input w-full font-semibold">
                         <option value="new" {{ $enquiry->status == 'new' ? 'selected' : '' }}>New</option>
                         <option value="under_review" {{ $enquiry->status == 'under_review' ? 'selected' : '' }}>Under Review</option>
                         <option value="contacted" {{ $enquiry->status == 'contacted' ? 'selected' : '' }}>Contacted</option>
@@ -222,43 +227,90 @@
                 <textarea id="internal_notes" name="internal_notes" rows="4" class="form-input w-full">{{ $enquiry->internal_notes }}</textarea>
             </div>
             
-            <button type="submit" class="btn-primary">Save Changes</button>
+            <button type="submit" id="save-management-btn" class="btn-primary">Save Changes</button>
         </form>
     </div>
 </div>
 
 <script>
-    function updateStatus(enquiryId, status) {
-        fetch(`/admin/enquiries/${enquiryId}/status`, {
+    function syncAndSaveStatus(newStatus) {
+        const bottomSelect = document.getElementById('status');
+        if (bottomSelect) bottomSelect.value = newStatus;
+
+        const topSelect = document.getElementById('top-status-select');
+        const hint = document.getElementById('status-saving-hint');
+        const saveBtn = document.getElementById('save-management-btn');
+
+        if (topSelect) topSelect.disabled = true;
+        if (bottomSelect) bottomSelect.disabled = true;
+        if (saveBtn) saveBtn.disabled = true;
+        if (hint) hint.classList.remove('hidden');
+
+        const token = document.querySelector('meta[name="csrf-token"]')?.content || document.querySelector('input[name="_token"]')?.value;
+
+        fetch(`/admin/enquiries/{{ $enquiry->id }}/status`, {
             method: 'PATCH',
             headers: {
-                'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
+                'X-CSRF-TOKEN': token,
                 'Content-Type': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest',
                 'Accept': 'application/json'
             },
-            body: JSON.stringify({ status })
+            body: JSON.stringify({ status: newStatus })
         }).then(response => {
             if (response.ok) {
                 window.location.reload();
             } else {
-                alert('Failed to update status');
+                alert('Failed to update status.');
+                if (topSelect) topSelect.disabled = false;
+                if (bottomSelect) bottomSelect.disabled = false;
+                if (saveBtn) saveBtn.disabled = false;
+                if (hint) hint.classList.add('hidden');
             }
+        }).catch(err => {
+            alert('Network error while updating status.');
+            if (topSelect) topSelect.disabled = false;
+            if (bottomSelect) bottomSelect.disabled = false;
+            if (saveBtn) saveBtn.disabled = false;
+            if (hint) hint.classList.add('hidden');
         });
     }
+
+    // Attach submit listener to bottom form to prevent double-submitting
+    document.querySelector('form[action="{{ route('admin.enquiries.status', $enquiry) }}"]')?.addEventListener('submit', function() {
+        const btn = document.getElementById('save-management-btn');
+        if (btn) {
+            btn.disabled = true;
+            btn.innerText = 'Saving Changes...';
+        }
+    });
     
     function sendAutoReply() {
-        if (confirm('Send auto-reply email to customer?')) {
-            // Implement auto-reply
-            alert('Auto-reply sent (implement email sending)');
-        }
+        if (!confirm('Send confirmation email to customer ({{ $enquiry->email }})?')) return;
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{{ route('admin.enquiries.auto-reply', $enquiry) }}';
+        const csrf = document.createElement('input');
+        csrf.type = 'hidden';
+        csrf.name = '_token';
+        csrf.value = '{{ csrf_token() }}';
+        form.appendChild(csrf);
+        document.body.appendChild(form);
+        form.submit();
     }
     
     function sendNotification() {
-        if (confirm('Send notification to team?')) {
-            // Implement notification
-            alert('Notification sent (implement notification system)');
-        }
+        if (!confirm('Send notification email to the company team?')) return;
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{{ route('admin.enquiries.notify-team', $enquiry) }}';
+        const csrf = document.createElement('input');
+        csrf.type = 'hidden';
+        csrf.name = '_token';
+        csrf.value = '{{ csrf_token() }}';
+        form.appendChild(csrf);
+        document.body.appendChild(form);
+        form.submit();
     }
 </script>
 @endsection

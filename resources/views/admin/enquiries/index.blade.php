@@ -127,20 +127,39 @@
     }
     
     function updateStatus(enquiryId, status) {
+        const select = event.target;
+        if (select) {
+            select.disabled = true;
+            select.style.opacity = '0.6';
+        }
+
+        const token = document.querySelector('meta[name="csrf-token"]')?.content || document.querySelector('input[name="_token"]')?.value;
+
         fetch(`/admin/enquiries/${enquiryId}/status`, {
             method: 'PATCH',
             headers: {
-                'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
+                'X-CSRF-TOKEN': token,
                 'Content-Type': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest',
                 'Accept': 'application/json'
             },
             body: JSON.stringify({ status })
         }).then(response => {
-            if (!response.ok) {
-                alert('Failed to update status');
-                // Reload to reset dropdown
+            if (response.ok) {
                 window.location.reload();
+            } else {
+                alert('Failed to update status');
+                if (select) {
+                    select.disabled = false;
+                    select.style.opacity = '1';
+                }
+                window.location.reload();
+            }
+        }).catch(err => {
+            alert('Network error while updating status');
+            if (select) {
+                select.disabled = false;
+                select.style.opacity = '1';
             }
         });
     }

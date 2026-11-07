@@ -65,8 +65,8 @@
                 
                 <div class="flex items-center justify-between pt-2">
                     <div class="flex items-center">
-                        <input id="remember" name="remember" type="checkbox" class="form-checkbox h-4 w-4 text-accent-primary border-gray-300 rounded">
-                        <label for="remember" class="ml-2 block text-xs sm:text-sm text-text-secondary">Remember me</label>
+                        <input id="remember" name="remember" type="checkbox" value="1" {{ old('remember', true) ? 'checked' : '' }} class="form-checkbox h-4 w-4 text-accent-primary border-gray-300 rounded cursor-pointer">
+                        <label for="remember" class="ml-2 block text-xs sm:text-sm text-text-secondary cursor-pointer">Remember me (7 days)</label>
                     </div>
                     
                     <div class="text-xs sm:text-sm">

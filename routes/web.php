@@ -63,6 +63,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified'])->group(
     Route::get('enquiries', [App\Http\Controllers\Admin\EnquiryController::class, 'index'])->name('enquiries.index');
     Route::get('enquiries/{enquiry}', [App\Http\Controllers\Admin\EnquiryController::class, 'show'])->name('enquiries.show');
     Route::patch('enquiries/{enquiry}/status', [App\Http\Controllers\Admin\EnquiryController::class, 'updateStatus'])->name('enquiries.status');
+    Route::post('enquiries/{enquiry}/auto-reply', [App\Http\Controllers\Admin\EnquiryController::class, 'sendAutoReply'])->name('enquiries.auto-reply');
+    Route::post('enquiries/{enquiry}/notify-team', [App\Http\Controllers\Admin\EnquiryController::class, 'sendTeamNotification'])->name('enquiries.notify-team');
 
     // Media Upload for Visual CMS
     Route::post('media/upload', [App\Http\Controllers\Admin\MediaController::class, 'upload'])->name('media.upload');

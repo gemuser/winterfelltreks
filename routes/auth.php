@@ -10,6 +10,10 @@ Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'create'])->name('login');
     Route::post('/login', [LoginController::class, 'store']);
     
+    Route::get('/login/verify-otp', [LoginController::class, 'showOtpForm'])->name('login.otp');
+    Route::post('/login/verify-otp', [LoginController::class, 'verifyOtp'])->name('login.otp.verify');
+    Route::post('/login/resend-otp', [LoginController::class, 'resendOtp'])->name('login.otp.resend')->middleware('throttle:5,1');
+    
     Route::get('/register', [RegisterController::class, 'create'])->name('register');
     Route::post('/register', [RegisterController::class, 'store']);
     
