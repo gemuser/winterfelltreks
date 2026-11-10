@@ -6,7 +6,9 @@
     $badgeEl = $elements['badge'] ?? $elements['tag'] ?? null;
     $badge = $badgeEl?->content ?? 'Field Dispatches';
 
-    $testimonials = $elements['testimonials']?->getRepeaterItems() ?? [];
+    $testimonialsEl = $elements['testimonials'] ?? null;
+    $testimonialsId = $testimonialsEl?->id ?? '';
+    $testimonials = $testimonialsEl?->getRepeaterItems() ?? [];
     if (empty($testimonials)) {
         if (isset($pageData['testimonials']) && is_object($pageData['testimonials'])) {
             $testimonials = $pageData['testimonials']->toArray();
@@ -51,7 +53,9 @@
                     @endphp
                     <div class="testimonial-slide w-full flex-shrink-0 px-2 sm:px-4">
                         <article class="bg-white p-8 sm:p-12 border border-gray-100 text-center shadow-sm relative">
-                            <img src="{{ $photo }}" alt="{{ $t['customer_name'] ?? 'Client' }}" class="w-20 h-20 rounded-full mx-auto mb-6 object-cover border-2 border-accent-primary shadow-md" loading="lazy" decoding="async">
+                            <img src="{{ $photo }}" alt="{{ $t['customer_name'] ?? 'Client' }}" 
+                                 data-repeater-id="{{ $testimonialsId }}" data-repeater-key="testimonials" data-repeater-index="{{ $index }}" data-repeater-field="customer_photo"
+                                 class="w-20 h-20 rounded-full mx-auto mb-6 object-cover border-2 border-accent-primary shadow-md cursor-pointer" loading="lazy" decoding="async">
 
                             @if(isset($t['rating']))
                             <div class="flex justify-center gap-1 mb-6" aria-label="{{ $t['rating'] }} out of 5 stars">
@@ -63,14 +67,14 @@
                             </div>
                             @endif
 
-                            <blockquote class="font-body text-text-secondary text-base sm:text-lg italic leading-relaxed mb-6 max-w-2xl mx-auto">
+                            <blockquote data-repeater-id="{{ $testimonialsId }}" data-repeater-key="testimonials" data-repeater-index="{{ $index }}" data-repeater-field="review" class="font-body text-text-secondary text-base sm:text-lg italic leading-relaxed mb-6 max-w-2xl mx-auto">
                                 "{{ $t['review'] ?? $t['quote'] ?? '' }}"
                             </blockquote>
 
                             <div>
-                                <h3 class="font-display font-bold text-text-primary text-base sm:text-lg">{{ $t['customer_name'] ?? 'Client' }}</h3>
+                                <h3 data-repeater-id="{{ $testimonialsId }}" data-repeater-key="testimonials" data-repeater-index="{{ $index }}" data-repeater-field="customer_name" class="font-display font-bold text-text-primary text-base sm:text-lg">{{ $t['customer_name'] ?? 'Client' }}</h3>
                                 @if(isset($t['customer_country']) || isset($t['expedition_name']))
-                                <p class="text-xs sm:text-sm text-text-muted mt-0.5">
+                                <p data-repeater-id="{{ $testimonialsId }}" data-repeater-key="testimonials" data-repeater-index="{{ $index }}" data-repeater-field="customer_country" class="text-xs sm:text-sm text-text-muted mt-0.5">
                                     {{ $t['customer_country'] ?? '' }}{{ isset($t['customer_country']) && isset($t['expedition_name']) ? ' · ' : '' }}{{ $t['expedition_name'] ?? '' }}
                                 </p>
                                 @endif

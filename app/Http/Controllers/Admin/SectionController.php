@@ -210,6 +210,26 @@ class SectionController extends Controller
             if ($element) {
                 if ($element->element_type === 'image' && is_string($content) && !str_starts_with(trim($content), '{')) {
                     $content = ['url' => $content, 'alt' => ''];
+                } elseif ($element->element_type === 'repeater') {
+                    if (is_array($content) && !empty($content['__repeater_update'])) {
+                        // Targeted single-item field update on a repeater
+                        $existing = $element->getRepeaterItems();
+                        $idx = (int)($content['index'] ?? 0);
+                        $field = $content['field'] ?? '';
+                        $val = $content['value'] ?? '';
+                        if ($field !== '') {
+                            if (!isset($existing[$idx])) {
+                                $existing[$idx] = [];
+                            }
+                            $existing[$idx][$field] = $val;
+                            $content = $existing;
+                        }
+                    } elseif (is_string($content) && (str_starts_with(trim($content), '{') || str_starts_with(trim($content), '['))) {
+                        $decoded = json_decode($content, true);
+                        if (json_last_error() === JSON_ERROR_NONE) {
+                            $content = $decoded;
+                        }
+                    }
                 } elseif (in_array($element->element_type, ['link', 'component']) && is_string($content) && (str_starts_with(trim($content), '{') || str_starts_with(trim($content), '['))) {
                     $decoded = json_decode($content, true);
                     if (json_last_error() === JSON_ERROR_NONE) {

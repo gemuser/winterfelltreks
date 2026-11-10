@@ -11,7 +11,9 @@
     $viewAllText = $viewAllData['text'] ?? ($viewAllEl && is_string($viewAllEl->content) && !str_starts_with(trim($viewAllEl->content), '{') && !str_starts_with($viewAllEl->content, 'http') && !str_starts_with($viewAllEl->content, '/') ? $viewAllEl->content : ($elements['view_all_text']?->content ?? 'View All Packages'));
     $viewAllUrl = $viewAllData['url'] ?? ($viewAllEl && is_string($viewAllEl->content) && (str_starts_with($viewAllEl->content, 'http') || str_starts_with($viewAllEl->content, '/')) ? $viewAllEl->content : ($elements['view_all_url']?->content ?? url('/packages')));
 
-    $packages = $elements['packages']?->getRepeaterItems() ?? [];
+    $packagesEl = $elements['packages'] ?? null;
+    $packagesId = $packagesEl?->id ?? '';
+    $packages = $packagesEl?->getRepeaterItems() ?? [];
     if (empty($packages)) {
         $packages = \App\Models\Expedition::published()->take(3)->get()->map(fn($p) => [
             'name' => $p->title,
@@ -65,28 +67,30 @@
                         $pkgImg = $pkg['image'] ?? '/images/pkg-' . (($index % 3) + 1) . '.jpg';
                     @endphp
                     <div class="aspect-[4/3] overflow-hidden relative bg-gray-100">
-                        <img src="{{ $pkgImg }}" alt="{{ $pkg['name'] ?? 'Package' }}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy" decoding="async">
+                        <img src="{{ $pkgImg }}" alt="{{ $pkg['name'] ?? 'Package' }}" 
+                             data-repeater-id="{{ $packagesId }}" data-repeater-key="packages" data-repeater-index="{{ $index }}" data-repeater-field="image"
+                             class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 cursor-pointer" loading="lazy" decoding="async">
                         @if(isset($pkg['destination']))
-                        <div class="absolute top-4 left-4 bg-accent-primary text-white px-3 py-1 text-xs font-semibold uppercase tracking-wider">
+                        <div data-repeater-id="{{ $packagesId }}" data-repeater-key="packages" data-repeater-index="{{ $index }}" data-repeater-field="destination" class="absolute top-4 left-4 bg-accent-primary text-white px-3 py-1 text-xs font-semibold uppercase tracking-wider">
                             {{ $pkg['destination'] }}
                         </div>
                         @endif
                         @if(isset($pkg['duration']) && $pkg['duration'])
-                        <div class="absolute bottom-4 right-4 bg-gray-950/80 backdrop-blur-xs text-white px-3 py-1 text-xs font-medium">
+                        <div data-repeater-id="{{ $packagesId }}" data-repeater-key="packages" data-repeater-index="{{ $index }}" data-repeater-field="duration" class="absolute bottom-4 right-4 bg-gray-950/80 backdrop-blur-xs text-white px-3 py-1 text-xs font-medium">
                             {{ $pkg['duration'] }}
                         </div>
                         @endif
                     </div>
                     <div class="p-6">
                         @if(isset($pkg['name']))
-                        <h3 class="font-display text-xl font-bold text-text-primary mb-2">
+                        <h3 data-repeater-id="{{ $packagesId }}" data-repeater-key="packages" data-repeater-index="{{ $index }}" data-repeater-field="name" class="font-display text-xl font-bold text-text-primary mb-2">
                             <a href="{{ url('/packages/' . ($pkg['slug'] ?? Str::slug($pkg['name']))) }}" class="hover:text-accent-primary transition-colors">
                                 {{ $pkg['name'] }}
                             </a>
                         </h3>
                         @endif
                         @if(isset($pkg['description']))
-                        <p class="text-text-secondary text-sm line-clamp-2 leading-relaxed">
+                        <p data-repeater-id="{{ $packagesId }}" data-repeater-key="packages" data-repeater-index="{{ $index }}" data-repeater-field="description" class="text-text-secondary text-sm line-clamp-2 leading-relaxed">
                             {{ strip_tags($pkg['description']) }}
                         </p>
                         @endif

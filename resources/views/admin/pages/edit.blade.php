@@ -31,6 +31,7 @@
                 'url' => is_array($cDec) ? ($cDec['url'] ?? '') : (is_string($el->content) ? $el->content : ''),
                 'alt' => is_array($cDec) ? ($cDec['alt'] ?? '') : '',
                 'text' => is_array($cDec) ? ($cDec['text'] ?? '') : '',
+                'items' => is_array($cDec) ? $cDec : ($el->element_type === 'repeater' ? $el->getRepeaterItems() : []),
             ];
         }
 
@@ -2014,6 +2015,34 @@
                                             <input type="text" :name="'elements[' + elem.id + '][url]'" x-model="elem.url" placeholder="Link URL (/expeditions)" class="form-input w-full text-xs bg-white">
                                         </div>
                                     </template>
+
+                                    {{-- Repeater Items (Team, Values, Features, Testimonials, Gallery) --}}
+                                    <template x-if="elem.type === 'repeater'">
+                                        <div class="space-y-3">
+                                            <template x-for="(item, idx) in (elem.items || [])" :key="idx">
+                                                <div class="p-3 bg-white rounded-lg border border-gray-200 space-y-2 relative shadow-2xs">
+                                                    <div class="flex items-center justify-between border-b border-gray-100 pb-1.5">
+                                                        <span class="text-xs font-bold text-gray-700" x-text="'Item #' + (idx + 1) + (item.name ? ' (' + item.name + ')' : (item.title ? ' (' + item.title + ')' : (item.customer_name ? ' (' + item.customer_name + ')' : '')))"></span>
+                                                        <button type="button" @click="elem.items.splice(idx, 1)" class="text-red-500 hover:text-red-700 text-xs font-bold transition-colors">✕ Remove</button>
+                                                    </div>
+                                                    <template x-for="fKey in Object.keys(item)" :key="fKey">
+                                                        <div class="space-y-1">
+                                                            <label class="block text-3xs font-bold uppercase tracking-wider text-gray-500" x-text="fKey.replace(/_/g, ' ')"></label>
+                                                            <template x-if="['bio', 'description', 'review', 'quote'].includes(fKey)">
+                                                                <textarea rows="2" x-model="item[fKey]" class="form-input w-full text-xs bg-gray-50/50"></textarea>
+                                                            </template>
+                                                            <template x-if="!['bio', 'description', 'review', 'quote'].includes(fKey)">
+                                                                <input type="text" x-model="item[fKey]" class="form-input w-full text-xs bg-gray-50/50">
+                                                            </template>
+                                                        </div>
+                                                    </template>
+                                                </div>
+                                            </template>
+                                            <button type="button" @click="if (!Array.isArray(elem.items)) elem.items = []; elem.items.push(elem.items.length > 0 ? Object.keys(elem.items[0]).reduce((acc, k) => ({ ...acc, [k]: '' }), {}) : { title: '', description: '' })" class="w-full py-2 border border-dashed border-gray-300 rounded-lg text-xs font-semibold text-gray-600 hover:border-accent-primary hover:text-accent-primary transition-colors flex items-center justify-center gap-1.5">
+                                                <span>+</span> Add New Item
+                                            </button>
+                                        </div>
+                                    </template>
                                 </div>
                             </template>
                         </div>
@@ -2673,6 +2702,7 @@ function canvaEditor() {
         // Modals for direct element editing
         activeImageElement: null,
         activeImageSectionId: null,
+        activeRepeaterImageMeta: null,
         activeLinkElement: null,
         activeLinkSectionId: null,
 
@@ -4334,6 +4364,7 @@ function canvaEditor() {
         },
 
         openImageModal(sectionId, elementOrId) {
+            this.activeRepeaterImageMeta = null;
             this.activeImageSectionId = sectionId;
             const sec = this.sectionsData[sectionId];
             if (!sec) return;
@@ -4352,6 +4383,24 @@ function canvaEditor() {
             } else {
                 alert('This block does not contain an image element.');
             }
+        },
+
+        openRepeaterImageModal(sectionId, repId, repKey, repIdx, repField, img) {
+            this.activeImageSectionId = sectionId;
+            this.activeRepeaterImageMeta = {
+                repId: repId || null,
+                repKey: repKey || 'team',
+                repIdx: parseInt(repIdx || 0),
+                repField: repField || 'image',
+                imgEl: img
+            };
+            this.activeImageElement = {
+                id: repId || repKey,
+                key: repKey,
+                type: 'image',
+                url: img ? img.src : '',
+                alt: img ? (img.alt || '') : ''
+            };
         },
 
         async uploadImage(event) {
@@ -4399,9 +4448,51 @@ function canvaEditor() {
             this.isSaving = true;
 
             const secId = this.activeImageSectionId;
-            const elId = this.activeImageElement.id;
             const newUrl = this.activeImageElement.url;
             const newAlt = this.activeImageElement.alt || '';
+
+            // Handle repeater item image update
+            if (this.activeRepeaterImageMeta) {
+                const meta = this.activeRepeaterImageMeta;
+                if (meta.imgEl) {
+                    meta.imgEl.src = newUrl;
+                    meta.imgEl.alt = newAlt;
+                }
+
+                // Sync with local sectionsData
+                const secData = this.sectionsData[secId];
+                if (secData && secData.elements) {
+                    const repEl = secData.elements.find(e => (meta.repId && e.id == meta.repId) || (meta.repKey && e.key === meta.repKey));
+                    if (repEl) {
+                        if (!Array.isArray(repEl.items)) repEl.items = [];
+                        if (!repEl.items[meta.repIdx]) repEl.items[meta.repIdx] = {};
+                        repEl.items[meta.repIdx][meta.repField] = newUrl;
+                    }
+                }
+
+                const targetKey = meta.repId || meta.repKey;
+                const payload = {
+                    __repeater_update: true,
+                    index: meta.repIdx,
+                    field: meta.repField,
+                    value: newUrl
+                };
+
+                const ok = await this.persistElements(secId, {
+                    [targetKey]: payload
+                });
+
+                this.activeImageElement = null;
+                this.activeRepeaterImageMeta = null;
+                this.isSaving = false;
+
+                if (ok) {
+                    window.location.reload();
+                }
+                return;
+            }
+
+            const elId = this.activeImageElement.id;
 
             // Update on canvas immediately
             const secContainer = document.getElementById('section-view-' + secId);
@@ -4552,6 +4643,15 @@ function canvaEditor() {
                 event.stopPropagation();
                 this.attachSelectionBox(img, 'Image');
                 const elId = img.dataset?.elementId;
+                const repId = img.dataset?.repeaterId;
+                const repKey = img.dataset?.repeaterKey;
+                const repIdx = img.dataset?.repeaterIndex;
+                const repField = img.dataset?.repeaterField;
+
+                if (repId || repKey) {
+                    this.openRepeaterImageModal(sectionId, repId, repKey, repIdx, repField, img);
+                    return;
+                }
                 this.openImageModal(sectionId, elId || null);
                 return;
             }
@@ -4618,22 +4718,33 @@ function canvaEditor() {
             this.isPhotoSelected = false;
             this.activeButtonElement = null;
 
-            // 4. If clicked any Text element (h1-h6, p, span, li, blockquote, .canva-custom-text, or element with data-key/data-element-id):
-            const textElem = target.closest('h1, h2, h3, h4, h5, h6, p, span, li, blockquote, .canva-custom-text, [data-key], [data-element-id]');
+            // 4. If clicked any Text element (h1-h6, p, span, li, blockquote, .canva-custom-text, or element with data-key/data-element-id/data-repeater-field):
+            const textElem = target.closest('h1, h2, h3, h4, h5, h6, p, span, li, blockquote, .canva-custom-text, [data-key], [data-element-id], [data-repeater-field]');
             if (textElem && !textElem.closest('a, button')) {
                 const headingAncestor = target.closest('h1, h2, h3, h4, h5, h6');
                 const actualText = headingAncestor || textElem;
 
-                // If inside a draggable custom item, also set activeTextKey to that item's key
+                const repField = actualText.dataset?.repeaterField || actualText.closest('[data-repeater-field]')?.dataset?.repeaterField;
+                const repKey = actualText.dataset?.repeaterKey || actualText.closest('[data-repeater-key]')?.dataset?.repeaterKey;
+                const repIdx = actualText.dataset?.repeaterIndex ?? actualText.closest('[data-repeater-index]')?.dataset?.repeaterIndex;
+
+                let tagLabel = 'Text';
                 const draggableParent = actualText.closest('.canva-draggable-item');
-                if (draggableParent) {
+
+                if (repField) {
+                    const cleanField = repField.replace(/_/g, ' ');
+                    tagLabel = (repKey ? repKey.charAt(0).toUpperCase() + repKey.slice(1) : 'Item') + ' ' + cleanField.charAt(0).toUpperCase() + cleanField.slice(1);
+                    this.activeTextKey = repKey || 'repeater';
+                } else if (draggableParent) {
                     this.activeTextKey = draggableParent.dataset?.key || actualText.dataset?.key;
+                    const tagName = actualText.tagName.toLowerCase();
+                    tagLabel = tagName.startsWith('h') ? 'Headline (' + tagName.toUpperCase() + ')' : (tagName === 'p' ? 'Body Text' : (tagName === 'span' ? 'Subtitle' : 'Text'));
                 } else {
                     this.activeTextKey = actualText.dataset?.key || (actualText.tagName.toLowerCase().startsWith('h') ? 'headline' : (actualText.tagName.toLowerCase() === 'p' ? 'body' : 'subheadline'));
+                    const tagName = actualText.tagName.toLowerCase();
+                    tagLabel = tagName.startsWith('h') ? 'Headline (' + tagName.toUpperCase() + ')' : (tagName === 'p' ? 'Body Text' : (tagName === 'span' ? 'Subtitle' : 'Text'));
                 }
 
-                const tagName = actualText.tagName.toLowerCase();
-                const tagLabel = tagName.startsWith('h') ? 'Headline (' + tagName.toUpperCase() + ')' : (tagName === 'p' ? 'Body Text' : (tagName === 'span' ? 'Subtitle' : 'Text'));
                 this.attachSelectionBox(draggableParent || actualText, tagLabel);
 
                 this.activeTextElement = actualText;
@@ -4668,7 +4779,12 @@ function canvaEditor() {
 
                         const updatedText = actualText.innerText.trim();
                         if (updatedText !== originalText && updatedText.length > 0) {
-                            await this.handleTextUpdated(sectionId, actualText, updatedText);
+                            try {
+                                this._pendingTextSave = this.handleTextUpdated(sectionId, actualText, updatedText);
+                                await this._pendingTextSave;
+                            } finally {
+                                this._pendingTextSave = null;
+                            }
                         }
                     };
 
@@ -4718,6 +4834,39 @@ function canvaEditor() {
 
         async handleTextUpdated(sectionId, domElem, newText, elementId = null) {
             const sec = this.sectionsData[sectionId];
+
+            // 0. Targeted repeater item field update:
+            const repId = domElem.dataset?.repeaterId || domElem.closest('[data-repeater-id]')?.dataset?.repeaterId;
+            const repKey = domElem.dataset?.repeaterKey || domElem.closest('[data-repeater-key]')?.dataset?.repeaterKey;
+            const repIdx = domElem.dataset?.repeaterIndex ?? domElem.closest('[data-repeater-index]')?.dataset?.repeaterIndex;
+            const repField = domElem.dataset?.repeaterField || domElem.closest('[data-repeater-field]')?.dataset?.repeaterField;
+
+            if ((repId || repKey) && repIdx !== undefined && repField) {
+                const targetKey = repId || repKey;
+                const idx = parseInt(repIdx);
+                const payload = {
+                    __repeater_update: true,
+                    index: idx,
+                    field: repField,
+                    value: newText
+                };
+
+                // Sync local sectionsData
+                if (sec && sec.elements) {
+                    const repEl = sec.elements.find(e => (repId && e.id == repId) || (repKey && e.key === repKey));
+                    if (repEl) {
+                        if (!Array.isArray(repEl.items)) repEl.items = [];
+                        if (!repEl.items[idx]) repEl.items[idx] = {};
+                        repEl.items[idx][repField] = newText;
+                    }
+                }
+
+                await this.persistElements(sectionId, {
+                    [targetKey]: payload
+                });
+                return;
+            }
+
             const resolvedElId = elementId || domElem.dataset?.elementId || domElem.closest('[data-element-id]')?.dataset?.elementId;
             const resolvedElKey = domElem.dataset?.key || domElem.closest('[data-key]')?.dataset?.key;
 
@@ -4811,6 +4960,8 @@ function canvaEditor() {
                     payload[el.id] = { text: el.text, url: el.url, style: 'primary' };
                 } else if (el.type === 'text' || el.type === 'richtext') {
                     payload[el.id] = el.value;
+                } else if (el.type === 'repeater') {
+                    payload[el.id] = el.items;
                 }
             });
 
@@ -4838,7 +4989,13 @@ function canvaEditor() {
             // Blur any active contenteditable element to trigger onBlur save
             if (this.activeTextElement && this.activeTextElement.isContentEditable) {
                 this.activeTextElement.blur();
-                await new Promise(r => setTimeout(r, 400));
+            }
+            if (this._pendingTextSave) {
+                await this._pendingTextSave;
+            }
+            await new Promise(r => setTimeout(r, 400));
+            if (this._pendingTextSave) {
+                await this._pendingTextSave;
             }
             this.savedNotice = true;
             this.isSaving = false;

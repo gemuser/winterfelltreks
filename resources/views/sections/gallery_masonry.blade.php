@@ -11,7 +11,9 @@
     $viewAllText = $viewAllData['text'] ?? ($viewAllEl && is_string($viewAllEl->content) && !str_starts_with(trim($viewAllEl->content), '{') && !str_starts_with($viewAllEl->content, 'http') && !str_starts_with($viewAllEl->content, '/') ? $viewAllEl->content : ($elements['view_all_text']?->content ?? 'View Full Gallery'));
     $viewAllUrl = $viewAllData['url'] ?? ($viewAllEl && is_string($viewAllEl->content) && (str_starts_with($viewAllEl->content, 'http') || str_starts_with($viewAllEl->content, '/')) ? $viewAllEl->content : ($elements['view_all_url']?->content ?? url('/gallery')));
 
-    $images = $elements['images']?->getRepeaterItems() ?? [];
+    $imagesEl = $elements['images'] ?? null;
+    $imagesId = $imagesEl?->id ?? '';
+    $images = $imagesEl?->getRepeaterItems() ?? [];
     $allImages = !empty($images) ? $images : ($pageData['images'] ?? collect());
     $categories = $pageData['categories'] ?? collect();
     $showCategories = $settings['show_categories'] ?? false;
@@ -82,13 +84,15 @@
                 $category = $isModel ? $img->category?->name : ($img['category'] ?? '');
             @endphp
             <div class="gallery-item group relative overflow-hidden bg-gray-100 aspect-[4/3] shadow-sm hover:shadow-md transition-shadow" data-gsap="fade-up" data-gsap-delay="{{ $index * 0.04 }}">
-                <img src="{{ $imageUrl }}" alt="{{ $caption ?: 'Himalayan mountain scenery' }}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy" decoding="async">
+                <img src="{{ $imageUrl }}" alt="{{ $caption ?: 'Himalayan mountain scenery' }}" 
+                     @if(!$isModel && $imagesId) data-repeater-id="{{ $imagesId }}" data-repeater-key="images" data-repeater-index="{{ $index }}" data-repeater-field="url" @endif
+                     class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 cursor-pointer" loading="lazy" decoding="async">
                 <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6">
                     @if($category)
-                    <span class="text-accent-primary text-xs font-semibold uppercase tracking-wider mb-1">{{ $category }}</span>
+                    <span @if(!$isModel && $imagesId) data-repeater-id="{{ $imagesId }}" data-repeater-key="images" data-repeater-index="{{ $index }}" data-repeater-field="category" @endif class="text-accent-primary text-xs font-semibold uppercase tracking-wider mb-1">{{ $category }}</span>
                     @endif
                     @if($caption)
-                    <p class="text-white text-sm font-medium line-clamp-2">{{ $caption }}</p>
+                    <p @if(!$isModel && $imagesId) data-repeater-id="{{ $imagesId }}" data-repeater-key="images" data-repeater-index="{{ $index }}" data-repeater-field="caption" @endif class="text-white text-sm font-medium line-clamp-2">{{ $caption }}</p>
                     @endif
                 </div>
             </div>

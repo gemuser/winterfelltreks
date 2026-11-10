@@ -11,7 +11,9 @@
     $viewAllText = $viewAllData['text'] ?? ($viewAllEl && is_string($viewAllEl->content) && !str_starts_with(trim($viewAllEl->content), '{') && !str_starts_with($viewAllEl->content, 'http') && !str_starts_with($viewAllEl->content, '/') ? $viewAllEl->content : ($elements['view_all_text']?->content ?? 'View All Destinations'));
     $viewAllUrl = $viewAllData['url'] ?? ($viewAllEl && is_string($viewAllEl->content) && (str_starts_with($viewAllEl->content, 'http') || str_starts_with($viewAllEl->content, '/')) ? $viewAllEl->content : ($elements['view_all_url']?->content ?? url('/destinations')));
 
-    $destinations = $elements['destinations']?->getRepeaterItems() ?? [];
+    $destinationsEl = $elements['destinations'] ?? null;
+    $destinationsId = $destinationsEl?->id ?? '';
+    $destinations = $destinationsEl?->getRepeaterItems() ?? [];
     if (empty($destinations)) {
         $destinations = \App\Models\Destination::published()->take(3)->get()->map(fn($d) => [
             'name' => $d->name,
@@ -64,23 +66,25 @@
                         $destImg = $dest['image'] ?? '/images/dest-' . (($index % 3) + 1) . '.jpg';
                     @endphp
                     <div class="aspect-[4/3] overflow-hidden relative bg-gray-100">
-                        <img src="{{ $destImg }}" alt="{{ $dest['name'] ?? 'Destination' }}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy" decoding="async">
+                        <img src="{{ $destImg }}" alt="{{ $dest['name'] ?? 'Destination' }}" 
+                             data-repeater-id="{{ $destinationsId }}" data-repeater-key="destinations" data-repeater-index="{{ $index }}" data-repeater-field="image"
+                             class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 cursor-pointer" loading="lazy" decoding="async">
                         @if(isset($dest['region']))
-                        <div class="absolute top-4 left-4 bg-accent-primary text-white px-3 py-1 text-xs font-semibold uppercase tracking-wider">
+                        <div data-repeater-id="{{ $destinationsId }}" data-repeater-key="destinations" data-repeater-index="{{ $index }}" data-repeater-field="region" class="absolute top-4 left-4 bg-accent-primary text-white px-3 py-1 text-xs font-semibold uppercase tracking-wider">
                             {{ $dest['region'] }}
                         </div>
                         @endif
                     </div>
                     <div class="p-6">
                         @if(isset($dest['name']))
-                        <h3 class="font-display text-xl font-bold text-text-primary mb-2">
+                        <h3 data-repeater-id="{{ $destinationsId }}" data-repeater-key="destinations" data-repeater-index="{{ $index }}" data-repeater-field="name" class="font-display text-xl font-bold text-text-primary mb-2">
                             <a href="{{ url('/destinations/' . ($dest['slug'] ?? Str::slug($dest['name']))) }}" class="hover:text-accent-primary transition-colors">
                                 {{ $dest['name'] }}
                             </a>
                         </h3>
                         @endif
                         @if(isset($dest['description']))
-                        <p class="text-text-secondary text-sm line-clamp-2 leading-relaxed">
+                        <p data-repeater-id="{{ $destinationsId }}" data-repeater-key="destinations" data-repeater-index="{{ $index }}" data-repeater-field="description" class="text-text-secondary text-sm line-clamp-2 leading-relaxed">
                             {{ $dest['description'] }}
                         </p>
                         @endif

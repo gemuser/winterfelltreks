@@ -12,7 +12,9 @@
     $viewAllText = $viewAllData['text'] ?? ($viewAllEl && is_string($viewAllEl->content) && !str_starts_with(trim($viewAllEl->content), '{') && !str_starts_with($viewAllEl->content, 'http') && !str_starts_with($viewAllEl->content, '/') ? $viewAllEl->content : ($elements['view_all_text']?->content ?? 'Read All Articles'));
     $viewAllUrl = $viewAllData['url'] ?? ($viewAllEl && is_string($viewAllEl->content) && (str_starts_with($viewAllEl->content, 'http') || str_starts_with($viewAllEl->content, '/')) ? $viewAllEl->content : ($elements['view_all_url']?->content ?? url('/travel-guide')));
 
-    $articles = $elements['articles']?->getRepeaterItems() ?? [];
+    $articlesEl = $elements['articles'] ?? null;
+    $articlesId = $articlesEl?->id ?? '';
+    $articles = $articlesEl?->getRepeaterItems() ?? [];
     $columns = (int)($settings['columns'] ?? 3);
     $showViewAll = $settings['show_view_all'] ?? true;
 
@@ -79,9 +81,11 @@
             @endphp
             <article class="article-card group bg-white border border-gray-100 flex flex-col h-full hover:shadow-xl transition-shadow duration-300" data-gsap="fade-up" data-gsap-delay="{{ $index * 0.05 }}">
                 <div class="aspect-[16/10] overflow-hidden relative bg-gray-100 flex-shrink-0">
-                    <img src="{{ $coverImage }}" alt="{{ $title }}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy" decoding="async">
+                    <img src="{{ $coverImage }}" alt="{{ $title }}" 
+                         @if(!$isModel) data-repeater-id="{{ $articlesId }}" data-repeater-key="articles" data-repeater-index="{{ $index }}" data-repeater-field="cover_image" @endif
+                         class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 cursor-pointer" loading="lazy" decoding="async">
                     @if($categoryName)
-                    <span class="absolute top-3 left-3 bg-accent-primary text-white text-xs font-semibold px-2.5 py-1 tracking-wider uppercase">
+                    <span @if(!$isModel) data-repeater-id="{{ $articlesId }}" data-repeater-key="articles" data-repeater-index="{{ $index }}" data-repeater-field="category" @endif class="absolute top-3 left-3 bg-accent-primary text-white text-xs font-semibold px-2.5 py-1 tracking-wider uppercase">
                         {{ $categoryName }}
                     </span>
                     @endif
@@ -91,15 +95,15 @@
                         <div class="flex items-center gap-2 text-xs font-medium text-text-muted mb-3">
                             <time>{{ $dateFormatted }}</time>
                             <span>·</span>
-                            <span>{{ $author }}</span>
+                            <span @if(!$isModel) data-repeater-id="{{ $articlesId }}" data-repeater-key="articles" data-repeater-index="{{ $index }}" data-repeater-field="author" @endif>{{ $author }}</span>
                         </div>
-                        <h3 class="font-display text-xl font-bold text-text-primary mb-3 leading-snug">
+                        <h3 @if(!$isModel) data-repeater-id="{{ $articlesId }}" data-repeater-key="articles" data-repeater-index="{{ $index }}" data-repeater-field="title" @endif class="font-display text-xl font-bold text-text-primary mb-3 leading-snug">
                             <a href="{{ url('/travel-guide/' . $slug) }}" class="hover:text-accent-primary transition-colors">
                                 {{ $title }}
                             </a>
                         </h3>
                         @if($excerpt)
-                        <p class="text-text-secondary text-sm leading-relaxed mb-6">{{ Str::limit(strip_tags($excerpt), 120) }}</p>
+                        <p @if(!$isModel) data-repeater-id="{{ $articlesId }}" data-repeater-key="articles" data-repeater-index="{{ $index }}" data-repeater-field="excerpt" @endif class="text-text-secondary text-sm leading-relaxed mb-6">{{ Str::limit(strip_tags($excerpt), 120) }}</p>
                         @endif
                     </div>
                     <div class="pt-4 border-t border-gray-100 mt-auto">

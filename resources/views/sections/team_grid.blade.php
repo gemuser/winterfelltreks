@@ -5,7 +5,9 @@
     $subheading = $subheadingEl?->content ?? 'Decades of combined high-altitude mountaineering expertise, indigenous sherpa heritage, and world-class logistics.';
     $badgeEl = $elements['badge'] ?? $elements['tag'] ?? null;
     $badge = $badgeEl?->content ?? 'The People Behind Your Summit';
-    $team = $elements['team']?->getRepeaterItems() ?? [];
+    $teamEl = $elements['team'] ?? null;
+    $teamId = $teamEl?->id ?? '';
+    $team = $teamEl?->getRepeaterItems() ?? [];
     $columns = (int)($settings['columns'] ?? 3);
 
     $gridClass = match($columns) {
@@ -62,11 +64,13 @@
             @endphp
             <article class="team-card group text-center flex flex-col items-center bg-white border border-gray-100 p-8 hover:border-gray-200 hover:shadow-lg transition-[border-color,box-shadow] duration-300" data-gsap="fade-up" data-gsap-delay="{{ $index * 0.05 }}">
                 <div class="relative w-40 h-40 sm:w-48 sm:h-48 rounded-full overflow-hidden mb-6 border-4 border-gray-100 group-hover:border-accent-primary transition-colors duration-300 shadow-md">
-                    <img src="{{ $img }}" alt="{{ $member['name'] ?? 'Team Member' }}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" decoding="async">
+                    <img src="{{ $img }}" alt="{{ $member['name'] ?? 'Team Member' }}" 
+                         data-repeater-id="{{ $teamId }}" data-repeater-key="team" data-repeater-index="{{ $index }}" data-repeater-field="image"
+                         class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 cursor-pointer" loading="lazy" decoding="async">
                 </div>
-                <h3 class="font-display text-xl font-bold text-text-primary mb-1">{{ $member['name'] ?? '' }}</h3>
-                <p class="text-accent-primary text-xs font-semibold uppercase tracking-wider mb-4">{{ $member['position'] ?? '' }}</p>
-                <p class="text-text-secondary text-sm leading-relaxed max-w-xs">{{ $member['bio'] ?? '' }}</p>
+                <h3 data-repeater-id="{{ $teamId }}" data-repeater-key="team" data-repeater-index="{{ $index }}" data-repeater-field="name" class="font-display text-xl font-bold text-text-primary mb-1">{{ $member['name'] ?? '' }}</h3>
+                <p data-repeater-id="{{ $teamId }}" data-repeater-key="team" data-repeater-index="{{ $index }}" data-repeater-field="position" class="text-accent-primary text-xs font-semibold uppercase tracking-wider mb-4">{{ $member['position'] ?? '' }}</p>
+                <p data-repeater-id="{{ $teamId }}" data-repeater-key="team" data-repeater-index="{{ $index }}" data-repeater-field="bio" class="text-text-secondary text-sm leading-relaxed max-w-xs">{{ $member['bio'] ?? '' }}</p>
             </article>
             @endforeach
         </div>

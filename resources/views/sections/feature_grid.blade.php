@@ -5,7 +5,9 @@
     $subheading = $subheadingEl?->content ?? '';
     $badgeEl = $elements['badge'] ?? $elements['tag'] ?? null;
     $badge = $badgeEl?->content ?? 'The Winterfell Difference';
-    $features = $elements['features']?->getRepeaterItems() ?? [];
+    $featuresEl = $elements['features'] ?? null;
+    $featuresId = $featuresEl?->id ?? '';
+    $features = $featuresEl?->getRepeaterItems() ?? [];
     $columns = (int)($settings['columns'] ?? 3);
     $colClass = match($columns) {
         2 => 'lg:grid-cols-2',
@@ -51,10 +53,10 @@
                 </div>
                 @endif
                 @if(isset($feature['title']))
-                <h3 class="font-display text-xl font-bold text-text-primary mb-3">{{ $feature['title'] }}</h3>
+                <h3 data-repeater-id="{{ $featuresId }}" data-repeater-key="features" data-repeater-index="{{ $index }}" data-repeater-field="title" class="font-display text-xl font-bold text-text-primary mb-3">{{ $feature['title'] }}</h3>
                 @endif
                 @if(isset($feature['description']))
-                <p class="text-text-secondary leading-relaxed text-sm">{{ $feature['description'] }}</p>
+                <p data-repeater-id="{{ $featuresId }}" data-repeater-key="features" data-repeater-index="{{ $index }}" data-repeater-field="description" class="text-text-secondary leading-relaxed text-sm">{{ $feature['description'] }}</p>
                 @endif
             </article>
             @endforeach

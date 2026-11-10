@@ -11,7 +11,9 @@
     $viewAllText = $viewAllData['text'] ?? ($viewAllEl && is_string($viewAllEl->content) && !str_starts_with(trim($viewAllEl->content), '{') && !str_starts_with($viewAllEl->content, 'http') && !str_starts_with($viewAllEl->content, '/') ? $viewAllEl->content : 'All Experiences');
     $viewAllUrl = $viewAllData['url'] ?? ($viewAllEl && is_string($viewAllEl->content) && (str_starts_with($viewAllEl->content, 'http') || str_starts_with($viewAllEl->content, '/')) ? $viewAllEl->content : url('/experiences'));
 
-    $experiences = $elements['experiences']?->getRepeaterItems() ?? [];
+    $experiencesEl = $elements['experiences'] ?? null;
+    $experiencesId = $experiencesEl?->id ?? '';
+    $experiences = $experiencesEl?->getRepeaterItems() ?? [];
     if (empty($experiences)) {
         $experiences = \App\Models\Experience::published()->take(3)->get()->map(fn($e) => [
             'name' => $e->name,
@@ -60,18 +62,20 @@
                         $expImg = $exp['image'] ?? '/images/exp-' . (($index % 3) + 1) . '.jpg';
                     @endphp
                     <div class="aspect-[4/3] overflow-hidden relative bg-gray-100">
-                        <img src="{{ $expImg }}" alt="{{ $exp['name'] ?? 'Experience' }}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy" decoding="async">
+                        <img src="{{ $expImg }}" alt="{{ $exp['name'] ?? 'Experience' }}" 
+                             data-repeater-id="{{ $experiencesId }}" data-repeater-key="experiences" data-repeater-index="{{ $index }}" data-repeater-field="image"
+                             class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 cursor-pointer" loading="lazy" decoding="async">
                     </div>
                     <div class="p-6">
                         @if(isset($exp['name']))
-                        <h3 class="font-display text-xl font-bold text-text-primary mb-2">
+                        <h3 data-repeater-id="{{ $experiencesId }}" data-repeater-key="experiences" data-repeater-index="{{ $index }}" data-repeater-field="name" class="font-display text-xl font-bold text-text-primary mb-2">
                             <a href="{{ url('/experiences/' . ($exp['slug'] ?? Str::slug($exp['name']))) }}" class="hover:text-accent-primary transition-colors">
                                 {{ $exp['name'] }}
                             </a>
                         </h3>
                         @endif
                         @if(isset($exp['description']))
-                        <p class="text-text-secondary text-sm line-clamp-2 leading-relaxed">
+                        <p data-repeater-id="{{ $experiencesId }}" data-repeater-key="experiences" data-repeater-index="{{ $index }}" data-repeater-field="description" class="text-text-secondary text-sm line-clamp-2 leading-relaxed">
                             {{ $exp['description'] }}
                         </p>
                         @endif

@@ -5,7 +5,9 @@
     $subheading = $subheadingEl?->content ?? 'The non-negotiable principles that shape every trail we walk, every summit we attempt, and every guest we host.';
     $badgeEl = $elements['badge'] ?? $elements['tag'] ?? null;
     $badge = $badgeEl?->content ?? 'Integrity in Action';
-    $values = $elements['values']?->getRepeaterItems() ?? [];
+    $valuesEl = $elements['values'] ?? null;
+    $valuesId = $valuesEl?->id ?? '';
+    $values = $valuesEl?->getRepeaterItems() ?? [];
     $columns = (int)($settings['columns'] ?? 3);
 
     $gridClass = match($columns) {
@@ -65,8 +67,8 @@
             @foreach($values as $index => $val)
             <div class="bg-white p-8 border border-gray-100 shadow-sm relative overflow-hidden group hover:border-accent-primary/40 transition-colors duration-300" data-gsap="fade-up" data-gsap-delay="{{ $index * 0.05 }}">
                 <div class="text-accent-primary font-mono text-sm mb-4 font-bold">0{{ $index + 1 }}</div>
-                <h3 class="font-display text-xl font-bold text-text-primary mb-3">{{ $val['title'] ?? '' }}</h3>
-                <p class="text-text-secondary text-sm leading-relaxed">{{ $val['description'] ?? '' }}</p>
+                <h3 data-repeater-id="{{ $valuesId }}" data-repeater-key="values" data-repeater-index="{{ $index }}" data-repeater-field="title" class="font-display text-xl font-bold text-text-primary mb-3">{{ $val['title'] ?? '' }}</h3>
+                <p data-repeater-id="{{ $valuesId }}" data-repeater-key="values" data-repeater-index="{{ $index }}" data-repeater-field="description" class="text-text-secondary text-sm leading-relaxed">{{ $val['description'] ?? '' }}</p>
             </div>
             @endforeach
         </div>
